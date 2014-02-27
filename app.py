@@ -22,9 +22,13 @@ gpsData = [{
 
 def oneLine(inputObject):
 	finalStr = ""
+
+	temp = [ str(x)+"="+str(inputObject[x]) for x in inputObject.keys()]
+	# The above list comprehension is the equivelent of the following
+	# for x in inputObject.keys():
+	# 	temp.append(str(x)+"="+str(inputObject[x]))
 	
-	for x in inputObject.keys():
-		finalStr+= str(x)+"="+str(inputObject[x])+','
+	finalStr = ','.join(temp)
 	return (finalStr+'\n')
 
 
