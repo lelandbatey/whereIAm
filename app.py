@@ -1,76 +1,119 @@
 from __future__ import print_function
 from flask import Flask, request
-from pprint import pprint
+import geo_model
 import flask
 import json
 
+#pylint: disable=W0312
+#pylint: disable=C0330
 
-log_file_name = "gpsRecord.log"
+# LOG_FILE_NAME = "gpsRecord.log"
 
-app = Flask(__name__)
+APP = Flask(__name__)
 
-gpsData = [{
-   "accuracy": "38.618",
-   "altitude": "0.0",
-   "bearing": "0.0",
-   "latitude": "46.3228938",
-   "longitude": "-119.2677629",
-   "provider": "network",
-   "speed": "0.0",
-   "time": "2014-02-20T04:55:49.603Z"
-}] # This will always be at least the first item in the list. Makes it simple to start
+APP.config.update(dict(
+	LOG_FILE_PATH="gpsRecord.log",
+	DATABASE="location_database.sqlite3"
+))
 
-def oneLine(inputObject):
-	finalStr = ""
 
-	temp = [ str(x)+"="+str(inputObject[x]) for x in inputObject.keys()]
+# Seed data will always be the first entry in whatever database is started
+SEED_DATA = {
+	"accuracy"  : "38.618",
+	"altitude"  : "0.0",
+	"bearing"   : "0.0",
+	"latitude"  : "46.3228938",
+	"longitude" : "-119.2677629",
+	"provider"  : "network",
+	"speed"     : "0.0",
+	"time"      : "2014-02-20T04:55:49.603Z"
+}
+
+# GPS_DATA = [SEED_DATA]
+
+
+def get_db():
+	"""Returns an instance of the database."""
+	database = geo_model.LocationModel(APP.config['DATABASE'])
+	database.add_if_empty(SEED_DATA)
+	return database
+
+
+def dict_to_oneline(in_dict):
+	"""Serializes a dictionary to a string that fits on one line."""
+	ret_val = ""
+	temp = [str(x)+"="+str(in_dict[x]) for x in in_dict.keys()]
 	# The above list comprehension is the equivelent of the following
-	# for x in inputObject.keys():
-	# 	temp.append(str(x)+"="+str(inputObject[x]))
+	# for x in in_dict.keys():
+	# 	temp.append(str(x)+"="+str(in_dict[x]))
 	
-	finalStr = ','.join(temp)
-	return (finalStr+'\n')
+	ret_val = ','.join(temp)
+	return ret_val+'\n'
 
 
-def logStr(inputObj):
-	recordFile = open(log_file_name,'a')
-	recordFile.write(oneLine(inputObj))
-	recordFile.close()
+def log_dict(in_dict):
+	"""Logs a dictionary to the log file specified via 'LOG_FILE_PATH'. Logs the
+	dictionary in special single line format."""
+	record_file = open(APP.config['LOG_FILE_PATH'], 'a')
+	record_file.write(dict_to_oneline(in_dict))
+	record_file.close()
 	return
 
-def jsonContent(inputData):
-	response = flask.make_response(inputData)
+def make_json_response(in_data):
+	"""Returns a proper json response out of the data in passed in."""
+	response = flask.make_response(in_data)
 	response.headers["Content-type"] = "application/json"
 	return response
 
-def jdump(inputData):
-	return json.dumps(inputData, sort_keys=True, indent=3, separators=(',', ': '))
+def jdump(in_data):
+	"""Creates prettified json representation of passed in object."""
+	return json.dumps(in_data, sort_keys=True, indent=4, separators=(',', ': '))
 
-@app.route('/update', methods=['POST','GET'])
+@APP.route('/update', methods=['POST'])
 def update():
-	# pprint(request.form)
-	# print(jdump(request.form))
-	gpsData.append(request.form)
-	logStr(request.form)
+	"""Logs the request to the log file, as well as adding it to he database."""
+	localdb = get_db()
+
+	localdb.new_entry(request.form)
+	log_dict(request.form)
+	localdb.session.close()
 	return ""
 
-@app.route('/currentpos')
-def currentPos():
-	data = jdump(gpsData[-1])
-	return jsonContent(data)
+@APP.route('/currentpos')
+def current_position():
+	"""Responds with the latest location in the database."""
+	localdb = get_db()
 
-@app.route('/allpos')
-def allPos():
-	allData = jdump(gpsData)
-	return jsonContent(allData)
+	data = localdb.get_latest()
+	data = jdump(data)
+	localdb.session.close()
+	return make_json_response(data)
 
-@app.route('/')
-def mainPage():
-	return flask.render_template("mainpage.html")
+@APP.route('/allpos')
+def all_positions():
+	"""Returns all the location entries in the database, serialized to JSON."""
+	localdb = get_db()
+	all_data = jdump(localdb.get_all())
+	localdb.session.close()
+	return make_json_response(all_data)
 
+@APP.route('/')
+def main_page():
+	"""Renders the main page."""
+	return flask.render_template("testpage.html")
+
+@APP.route('/data_range/<float:begin>/<float:end>')
+def data_range(begin, end):
+	"""Returns all the location entries with timestamps between the given start
+	and end. Timestamps are in epoc format."""
+	localdb = get_db()
+	to_return = localdb.get_range(begin, end)
+	to_return = jdump(to_return)
+	localdb.session.close()
+	return to_return
 
 if __name__ == '__main__':
-	app.run(port=8001)
+	APP.run(port=8001, debug=True)
 
 
 
