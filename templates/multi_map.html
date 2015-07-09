@@ -1,59 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<script type="text/javascript"
-	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5l8Y_pDgxKIp2K1icKCHcUcoQ0b_SVGU&sensor=true&libraries=geometry"></script>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-	<script data-main="static/main" src="/static/require.js"></script>
+	<link rel="stylesheet" type="text/css" href="/static/css/multi_map.css">
+	<script	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB5l8Y_pDgxKIp2K1icKCHcUcoQ0b_SVGU&sensor=false&libraries=geometry"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 	<script src="/static/tinycolor.js"></script>
-	<title>Multi Maps.</title>
-	<style type="text/css">
-
-#container {
-	width: 1920px;
-	margin-right: auto;
-	margin-left: auto;
-	*zoom: 1;
-}
-.map-container { 
-	height: 360px;
-	width: 240px;
-	border: 1px dotted grey;
-	float: left;
-	display: flex;
-	flex-direction: column;
-}
-.map-canvas {
-	height: 100%;
-	width: 100%;
-}
-.map-info {
-	min-height: 60px;
-	font-size: 6px;
-	margin: 0;
-}
-
-/*======= Map Styling ============*/
-.gmnoprint a, .gmnoprint span {
-    display:none;
-}
-.gmnoprint div {
-    background:none !important;
-}
-#GMapsID div div a div img{
-    display:none;
-}
-.gm-style div a div img {
-	display: none;
-}
-img[src=http://maps.gstatic.com/mapfiles/api-3/images/google_white2.png] {
-	display:none;
-}
-img[src=https://maps.gstatic.com/mapfiles/api-3/images/google_white2_hdpi.png] {
-	display:none;
-}
-
-	</style>
+	<!--<script data-main="static/main" src="/static/require.js"></script>-->
+	<title>Multi Maps</title>
 </head>
 <body>
 	<div id="container">
@@ -61,18 +14,8 @@ img[src=https://maps.gstatic.com/mapfiles/api-3/images/google_white2_hdpi.png] {
 		</div> -->
 	</div>
 </body>
-<script type="text/javascript">
-
-function jp(obj){ console.log(JSON.stringify(obj, null, 4)); }
-
-function translate_domain(d_start, d_stop, d_val, n_start, n_stop){
-	var d = d_stop - d_start;
-	var v = d_val - d_start;
-	var ratio = v/d;
-	var nd = n_stop - n_start;
-	var nv = (ratio * nd) + n_start;
-	return nv;
-}
+<!--<script type="text/javascript">
+"use strict";
 
 function normalize_radian(r){
 	r = r % (Math.PI*2.0);
@@ -97,40 +40,6 @@ var date_parse = function (dateStr){
 	// console.log(year, month, day, hour, minute, second, 0);
 	var out_date = new Date(year, month, day, hour, minute, second, 0);
 	return out_date;
-}
-
-
-function color_interpolate(c0, c1, percent){
-	function interpolater(a, b, t){
-		return a * (1 - t) + b * t;
-	}
-	h0 = c0.toHsv();
-	h1 = c1.toHsv();
-	var h = interpolater(h0.h, h1.h, percent);
-	var s = interpolater(h0.s, h1.s, percent);
-	var v = interpolater(h0.v, h1.v, percent);
-
-	var tmp = tinycolor({h:h, s:s, v:v});
-	return tmp;	
-}
-
-// Creates an array of colors transitioning between multiple colors, instead
-// of from just one color to another.
-function getColorRanges(colors, data){
-	var subRangeLen = Math.ceil(data.length/(colors.length-1));
-	var colorRange = [];
-
-	for (var i = 0; i < colors.length-1; i++) {
-		for (var x = 0; x < subRangeLen; x++) {
-			var ratio = x/subRangeLen;
-			var currentColor = color_interpolate(colors[i], colors[i+1], ratio);
-			colorRange.push(currentColor);
-		};
-	};
-	if (colorRange.length > data.length) {
-		colorRange = colorRange.slice(0, data.length-1);
-	};
-	return colorRange;
 }
 
 function bearingToColor(bearing){
@@ -244,62 +153,6 @@ function mapCoordinatePairs(inputData){
 	};
 }
 
-function createMap(inputData){
-	console.log(inputData);
-	var coords = [];
-
-	for (var i = inputData.length - 1; i >= 0; i--) {
-		coords.push(new google.maps.LatLng (inputData[i].latitude, inputData[i].longitude));
-	};
-	var mapOptions = {
-		center: coords[0],
-		zoom: 16
-	};
-	var map = new google.maps.Map(document.getElementById("map-container"), mapOptions);
-	
-	// var startColor = tinycolor("#55ACEE");
-	// var endColor = tinycolor("#DD3DD3");
-	// Create a different color for each coordinate.
-	var colorRanges = [
-		"red",
-		"blue",
-		"red",
-		"blue"
-	].map(tinycolor);
-
-	var colors = getColorRanges(colorRanges, coords);
-	// for (var i = 0; i < coords.length; i++) {
-	// 	var dist = i/(coords.length-1);
-	// 	var currentColor = color_interpolate(startColor, endColor, dist);
-	// 	colors.push(currentColor);
-	// };
-
-	var paths = [];
-	// Create a new Polyline for each coordinate pair so we can set the color
-	// for each individually.
-	for (var i = 0; i < coords.length-1; i++) {
-		// var currentColor = colors[i];
-		var dataIndex = i- (i>1?1:-2);
-		var bearing = inputData[dataIndex].derived_bearing;
-		var linehue = Math.round((180/Math.PI)*bearing);
-		if (linehue < 0) { linehue += 360; };
-		console.log("bearing:", bearing)
-		console.log("dataIndex:", dataIndex);
-		console.log('linehue:', linehue)
-		var currentColor = tinycolor("hsl("+String(linehue)+", 100%, 50%)");
-		var path = new google.maps.Polyline({
-			path: [coords[i], coords[i+1]],
-			geodesic: true,
-			strokeColor: currentColor.toHexString(),
-			strokeOpacity: 1.0,
-			strokeWeight: 4,
-			map: map
-
-		});
-		paths.push(path);
-	};
-};
-
 // Start: 1423425600
 // Stop : 1423512000
 function initialize() {
@@ -324,5 +177,14 @@ function initialize() {
 
 google.maps.event.addDomListener(window, 'load', initialize);
 
-</script>
+</script>-->
+<div>
+	
+	<script src="static/DateParse.js"></script>
+	<script src="static/GpsCoordGroup.js"></script>
+	<script src="static/main.js"></script>
+	<script type="text/javascript">
+google.maps.event.addDomListener(window, 'load', initialize);
+	</script>
+</div>
 </html>
