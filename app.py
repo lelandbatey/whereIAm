@@ -100,7 +100,10 @@ def all_positions():
 @APP.route('/')
 def main_page():
 	"""Renders the main page."""
-	return flask.render_template("testpage.html")
+	return flask.render_template("multi_map.html")
+
+import statistics_playground.angles as angles
+
 
 @APP.route('/data_range/<float:begin>/<float:end>')
 def data_range(begin, end):
@@ -108,12 +111,25 @@ def data_range(begin, end):
 	and end. Timestamps are in epoc format."""
 	localdb = get_db()
 	to_return = localdb.get_range(begin, end)
+	to_return = angles.calculate_bearing(to_return)
 	to_return = jdump(to_return)
 	localdb.session.close()
 	return to_return
 
+
+@APP.route('/last_range')
+@APP.route('/last_range/<int:count>')
+def last_range(count=50):
+	localdb = get_db()
+	to_return = localdb.get_last_count(count)
+	to_return = angles.calculate_bearing(to_return)
+	to_return = jdump(to_return)
+	print(to_return)
+	localdb.session.close()
+	return to_return
+
 if __name__ == '__main__':
-	APP.run(port=8001, debug=True)
+	APP.run(host='0.0.0.0', port=8001, debug=True)
 
 
 

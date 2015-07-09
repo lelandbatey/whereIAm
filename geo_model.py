@@ -129,6 +129,13 @@ class LocationModel(object):
 		            .first()
 		return entry.json
 
+	def get_last_count(self, count=50):
+		"""Gets the latest `count` number of LocationEntrys."""
+		entries = self.session.query(LocationEntry)\
+		              .order_by(LocationEntry.id_num)\
+		              .limit(count)
+		return [x.json for x in entries]
+
 	def get_all(self):
 		"""Returns all the LocationEntry objects in order they where stored"""
 		entries = self.session.query(LocationEntry)\
@@ -167,9 +174,14 @@ def distance_on_unit_sphere(lat1, long1, lat2, long2):
 	#    sin phi sin phi' cos(theta-theta') + cos phi cos phi'
 	# distance = rho * arc length
 
-	cos = (math.sin(phi1)*math.sin(phi2)*math.cos(theta1 - theta2) +
-	       math.cos(phi1)*math.cos(phi2))
-	arc = math.acos(cos)
+	cos = (math.sin(phi1)*math.sin(phi2)*math.cos(theta1 - theta2) + math.cos(phi1)*math.cos(phi2))
+	cos = min(1, max(cos, -1))
+	try:
+		arc = math.acos(cos)
+	except Exception, e:
+		print("Cos:", cos)
+		print(e)
+		raise e
 
 	# Remember to multiply arc by the radius of the earth
 	# in your favorite set of units to get length.
