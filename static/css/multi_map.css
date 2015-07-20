@@ -1,13 +1,16 @@
 
+p {
+	margin: 0.25em;
+}
+/*
 #container {
 	width: 960px;
 	margin-right: auto;
 	margin-left: auto;
-	*zoom: 1;
-}
+}*/
 .map-container { 
-	height: 180px;
-	width: 120px;
+	height: 280px;
+	width: 150px;
 	border: 1px dotted grey;
 	float: left;
 	display: flex;
@@ -18,8 +21,8 @@
 	width: 100%;
 }
 .map-info {
-	min-height: 60px;
-	font-size: 6px;
+	min-height: 70px;
+	font-size: 12px;
 	margin: 0;
 }
 

@@ -61,3 +61,13 @@ Should the functionality of this program be extended such that this format no
 longer meets the storage needs of the project, it will be scraped in favor of
 a longer term solution such as Sqlite.
 
+
+### Conventions
+
+#### JS Conventions
+
+- Module/class names start with a capital letter and have a capital letter for each new word, with no underscores: `ExampleModuleName`
+- The names of modules/classes are the names of the files they're contained in: `SomeModule` exists in a file `SomeModule.js` with the same capitalization scheme.
+- Method names are camelcase (starts with lowercase word, with first letter of each word thereafter capitalized): `methodOfSomeKind`, `anExampleMethod`
+- Variable names are lowercase with underscores between words: `an_example_variable`
+

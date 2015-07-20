@@ -1,10 +1,6 @@
 define("GpsCoordGroup",
 	['tinycolor', 'gmaps'],
 	function (tinycolor, gmaps){
-	// Specifying the google maps url as a dependency ensures it's loaded
-	// globaly, but it's not formated as a module, so it can't be passed into
-	// this module by requirejs
-
 	return function (rawData, index, count, maxMapCount) {
 		"use strict";
 		// maxMapCount is optional, and will load from global
@@ -17,7 +13,7 @@ define("GpsCoordGroup",
 			}
 		}
 
-		// The optional `count` defaults to 100
+		// The optional `count` defaults to 4
 		if (arguments.length < 3) {
 			count = 4;
 		}
@@ -54,6 +50,7 @@ define("GpsCoordGroup",
 				var latlng = this.rawToLatLng(rawData[index+i]);
 				this.indices.push(index+i);
 				this.coords.push(latlng);
+				console.log(rawData[index+i]);
 			}
 		}
 
