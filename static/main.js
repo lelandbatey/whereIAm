@@ -25,10 +25,10 @@ require(
 		'GpsCoordGroup',
 		'DateParse',
 		'gmaps',
-		'PathSegment',
+		'SegmentSeriesModel',
 		'Views'
 	],
-function ($, GpsCoordGroup, DateParse, gmaps, PathSegment, Views) {
+function ($, GpsCoordGroup, DateParse, gmaps, SegmentSeriesModel, Views) {
 	"use strict";
 
 
@@ -58,7 +58,7 @@ function ($, GpsCoordGroup, DateParse, gmaps, PathSegment, Views) {
 		window.MAX_MAP_COUNT = maxMapCount;
 		function makeMap(brain_json){
 			for (var i = 0; i < maxMapCount; i++){
-			var group = new PathSegment(rawData, i);
+			var group = new SegmentSeriesModel(rawData, i);
 			console.log(i);
 
 			var view = new Views.SegmentBrainView(group, brain_json);
@@ -103,7 +103,7 @@ function ($, GpsCoordGroup, DateParse, gmaps, PathSegment, Views) {
 		};
 
 		for (i = 0; i < maxMapCount; i++){
-			var group = new PathSegment(rawData, i);
+			var group = new SegmentSeriesModel(rawData, i);
 			groups.push(group);
 			var parent = $('<div>').addClass('map-container');
 			var map_div = $('<div>').addClass('map-canvas');
@@ -138,7 +138,7 @@ function ($, GpsCoordGroup, DateParse, gmaps, PathSegment, Views) {
 
 		var groups = [], i;
 		for (i = 0; groups.length < maxMapCount; i+=20){
-			var group = new PathSegment(rawData, i, 20);
+			var group = new SegmentSeriesModel(rawData, i, 20);
 			groups.push(group);
 			var parent = $('<div>').addClass('map-container');
 			var map_div = $('<div>').addClass('map-canvas');
