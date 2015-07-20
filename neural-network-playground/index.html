@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Brain Training!</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script src="/brain-0.6.3.js"></script>
+	<script>
+
+
+function train_the_net(data){
+	var net = new brain.NeuralNetwork();
+	var results = net.train(data, {
+		errorThresh: 0.005,
+		iterations: 200000,
+		log: true,
+		logPeriod: 100,
+		learningRate: 0.1
+	});
+	console.log(JSON.stringify(net.toJSON(), null, 4));
+	console.log(results);
+}
+
+
+
+function initialize(){
+	$.ajax({
+		url: '/training_data.json',
+		dataType: 'json',
+		success: train_the_net
+	});
+}
+
+$(initialize);
+
+	</script>
+</head>
+<body>
+	
+</body>
+</html>
