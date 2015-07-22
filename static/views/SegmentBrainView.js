@@ -1,5 +1,5 @@
 
-define('SegmentBrainView', ['jquery', 'gmaps', 'lib/brain-0.6.3', 'SegmentView'],
+define(['jquery', 'gmaps', 'lib/brain-0.6.3', 'views/SegmentView'],
 function ($, gmaps, brain, SegmentView){
 
 function SegmentBrainView(SegmentGroup, brain_json, container){

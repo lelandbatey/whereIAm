@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="/static/css/multi_map.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script src="/static/require.js"></script>
+	<title>Rebuild Training JSON</title>
+</head>
+<body>
+	<div id="container">
+	</div>
+	<script>
+requirejs.config({
+	baseUrl: '/static',
+	paths: {
+		tinycolor: 'lib/tinycolor',
+		async: 'requirejs-plugins/async',
+		jquery: '//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery',
+	}
+});
+
+define ('gmaps', ['async!https://maps.googleapis.com/maps/api/js?key=AIzaSyB5l8Y_pDgxKIp2K1icKCHcUcoQ0b_SVGU&sensor=true&libraries=geometry'],
+	function () {
+		return google.maps;
+	}
+);
+
+define ('brain', ['async!lib/brain-0.6.3.js'],
+	function () {
+		return window.brain;
+	}
+);
+
+
+
+require(['jquery', 'SegmentSeriesModel'],
+function($, SegmentSeriesModel){
+
+function initialize(){
+	var datalist = [
+		'training_june-01-2015_1605--1746.json',
+		'training_june-02-2015_0926--1028.json',
+		'training_june-07-2015_1100--1146.json',
+		'training_june-19-2015_1500--1834.json',
+		'training_june-19-2015_1835--2150.json',
+		'training_june-20-2015_1145--1255.json'
+	];
+	var raw_training_data = [];
+	var new_training_data = [];
+
+	function createNewTrainingData (){
+		for (var x=0; x < raw_training_data.length; x++){
+			var session = raw_training_data[x];
+			for (var k=0; k < session.length; k++){
+				var group = session[k];
+				var segser = new SegmentSeriesModel(group, 0);
+				new_training_data.push(segser.getTrainingData());
+			}
+		}
+		console.log(JSON.stringify(new_training_data, null, 4));
+	}
+
+	function factoryAddData(){
+		return function(data){
+			raw_training_data.push(data);
+			console.log(raw_training_data.length);
+			if (raw_training_data.length === datalist.length){
+				createNewTrainingData();
+			}
+		}
+	}
+
+	for (var i = 0; i < datalist.length; i++){
+		$.ajax({
+			dataType: 'json',
+			url: '/static/training_data/'+datalist[i],
+			success: factoryAddData()
+		});
+	}
+}
+
+
+$(initialize);
+});
+	</script>
+</body>
+</html>

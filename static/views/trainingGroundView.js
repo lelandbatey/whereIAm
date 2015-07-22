@@ -1,5 +1,5 @@
 
-define('trainingGroundView', ['jquery', 'SegmentView'],
+define('trainingGroundView', ['jquery', 'views/SegmentView'],
 function ($, SegmentView){
 
 var click_func_factory = function (index, ybtn, nbtn, info_box, which){

@@ -8,7 +8,7 @@ function rawToLatLng(inval){
 function SegmentModel(raw_data, index){
 	function modifyPoint(index){
 		var obj = raw_data[index];
-		obj.index = index;
+		obj.index = obj.index || index;
 		obj.gmapObj = rawToLatLng(obj);
 		return obj;
 	}

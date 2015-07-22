@@ -1,5 +1,5 @@
 
-define('SegmentView', ['jquery', 'gmaps'],
+define(['jquery', 'gmaps'],
 function ($, gmaps){
 
 function SegmentView(SegmentGroup, container, viewFunc){

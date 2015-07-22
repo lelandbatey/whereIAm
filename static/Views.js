@@ -1,5 +1,5 @@
 
-define('Views', ['SegmentView', 'SegmentBrainView'],
+define('Views', ['views/SegmentView', 'views/SegmentBrainView'],
 function (SegmentView, SegmentBrainView){
 	return {
 		vanilla: SegmentView,

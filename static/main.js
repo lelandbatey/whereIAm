@@ -2,7 +2,8 @@
 requirejs.config({
 	baseUrl: 'static',
 	paths: {
-		async: 'requirejs-plugins/async',
+		tinycolor: 'lib/tinycolor',
+		async: 'lib/async',
 		jquery: '//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery',
 	}
 });
@@ -22,13 +23,12 @@ define ('brain', ['async!lib/brain-0.6.3.js'],
 require(
 	[
 		'jquery',
-		'GpsCoordGroup',
 		'DateParse',
 		'gmaps',
 		'SegmentSeriesModel',
 		'Views'
 	],
-function ($, GpsCoordGroup, DateParse, gmaps, SegmentSeriesModel, Views) {
+function ($, DateParse, gmaps, SegmentSeriesModel, Views) {
 	"use strict";
 
 

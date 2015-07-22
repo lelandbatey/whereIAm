@@ -25,15 +25,12 @@ function SegmentSeriesModel(raw_data, index, count){
 
 	var i;
 
-	// Since the "SegmentModel" object looks at in index one-prior to the index
-	// passed to it, we must anticipate this and start at 1
-	for (i = 1; this.segments.length < this.count; i++){
-		if ((this.index+i) < this.raw_data.length-1) {
-			this.segments.push(new SegmentModel(this.raw_data, this.index+i));
-		} else {
-			break;
-		}
+	if (typeof this.raw_data.segments !== 'undefined'){
+		this.initSegmentsFromTraining();
+	} else {
+		this.initSegments();
 	}
+
 
 	// Set the proper bearing differences for the various `SegmentModel`s
 	for (i = 1; i < this.segments.length; i++){
@@ -52,6 +49,33 @@ function SegmentSeriesModel(raw_data, index, count){
 	}
 };
 
+SegmentSeriesModel.prototype.initSegments = function (){
+	// Since the "SegmentModel" object looks at in index one-prior to the index
+	// passed to it, we must anticipate this and start at 1
+	for (i = 1; this.segments.length < this.count; i++){
+		if ((this.index+i) < this.raw_data.length-1) {
+			this.segments.push(new SegmentModel(this.raw_data, this.index+i));
+		} else {
+			break;
+		}
+	}
+}
+
+SegmentSeriesModel.prototype.initSegmentsFromTraining = function(){
+	this.is_moving_human_evaluation = this.raw_data.is_moving_human_evaluation;
+	var tsegs = this.raw_data.segments;
+	var i = 0;
+	// Create segments from segments given in training data
+	for (i = 0; i < tsegs.length; i++){
+		var temp_array = [];
+		temp_array.push(tsegs[i].start);
+		temp_array.push(tsegs[i].end);
+		this.segments.push(new SegmentModel(temp_array, 1));
+	}
+}
+
+
+
 SegmentSeriesModel.prototype.getTrainingData = function(is_moving){
 	var rv = {};
 	var train_data = {};
@@ -67,7 +91,7 @@ SegmentSeriesModel.prototype.getTrainingData = function(is_moving){
 		// logarithmic scale so that differences at low speeds are more
 		// noticable than differences at high speeds.
 
-		var max_speed = 500, min_speed = 0;
+		var max_speed = 20, min_speed = 0;
 		var raw_speed = this.segments[i].speed;
 		var speed = 0;
 		if (raw_speed < 0.4){
@@ -92,7 +116,6 @@ SegmentSeriesModel.prototype.getTrainingData = function(is_moving){
 				0, 1
 			);
 		}
-		speed = this.translate_domain(min_speed, max_speed, speed, 0, 1);
 
 		var bearing_diff = this.segments[i].bearing_difference;
 		// Use the absolute value of the bearing difference. Since the NN
@@ -117,7 +140,9 @@ SegmentSeriesModel.prototype.getTrainingData = function(is_moving){
 	rv.last_index = last;
 
 	if (typeof is_moving !== 'undefined') {
-		rv.is_moving_human_evaluation = is_moving
+		rv.is_moving_human_evaluation = is_moving;
+	} else if (typeof this.is_moving_human_evaluation !== 'undefined'){
+		rv.is_moving_human_evaluation = this.is_moving_human_evaluation;
 	}
 
 	return rv;
