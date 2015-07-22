@@ -9,16 +9,22 @@
 
 
 function train_the_net(data){
+	var errorThresh = 0.005;
 	var net = new brain.NeuralNetwork();
 	var results = net.train(data, {
-		errorThresh: 0.005,
-		iterations: 200000,
+		errorThresh: errorThresh,
+		iterations: 2000000,
 		log: true,
 		logPeriod: 100,
 		learningRate: 0.1
 	});
 	console.log(JSON.stringify(net.toJSON(), null, 4));
 	console.log(results);
+	if (results.error <= errorThresh){
+		console.log('TRAINING SUCCEEDED!');
+	} else {
+		console.log('Training failed..');
+	}
 }
 
 

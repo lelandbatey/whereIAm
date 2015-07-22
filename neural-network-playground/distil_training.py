@@ -34,7 +34,7 @@ def training_data_distill(raw):
 				inpt = entry['train_data']
 				outpt = entry['is_moving_human_evaluation']
 				pure['input'] = inpt
-				if outpt:
+				if not outpt:
 					pure['output'] = {'motionless': 1}
 				else:
 					pure['output'] = {'moving': 1}
@@ -44,7 +44,7 @@ def training_data_distill(raw):
 
 
 def main():
-	tpaths = training_data_files('../training_data/')
+	tpaths = training_data_files('../training_data_clean/')
 	traw = training_data_raw(tpaths)
 	distilled = training_data_distill(traw)
 	print(jdump(distilled))
