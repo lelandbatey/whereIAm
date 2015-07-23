@@ -105,15 +105,15 @@ class LocationModel(object):
 		if commit:
 			self.session.commit()
 
-	def get_range(self, begin, end):
+	def get_date_range(self, begin_date, end_date):
 		"""Gets all entries that exist between the begin and end dates.
 		Accepts either datetime objects or numbers representing a date."""
-		if isinstance(begin, datetime.datetime):
-			begin = datetime_to_epoch(begin)
-			end = datetime_to_epoch(end)
+		if isinstance(begin_date, datetime.datetime):
+			begin_date = datetime_to_epoch(begin_date)
+			end_date = datetime_to_epoch(end_date)
 		entries = self.session.query(LocationEntry).filter(
-			LocationEntry.monotonic_timestamp >= begin,
-			LocationEntry.monotonic_timestamp <= end
+			LocationEntry.monotonic_timestamp >= begin_date,
+			LocationEntry.monotonic_timestamp <= end_date
 		)
 		to_return = [x for x in entries]
 		to_return = speed_for_series(to_return)
@@ -151,6 +151,16 @@ class LocationModel(object):
 		).first()
 		return entry.json
 
+	def get_id_range(self, start_id, end_id):
+		"""Returns all LocationEntry objects with ids on or between start_id and end_id"""
+		entries = self.session.query(LocationEntry).filter(
+			LocationEntry.id_num >= start_id,
+			LocationEntry.id_num <= end_id
+		)
+		to_return = [x for x in entries]
+		to_return = speed_for_series(to_return)
+		to_return = [x.json for x in to_return]
+		return to_return
 
 
 import math

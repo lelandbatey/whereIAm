@@ -114,20 +114,31 @@ def get_entry_by_id(id_num):
 	"""Returns the entry with the given id."""
 	localdb = get_db()
 	to_return = localdb.get_id(id_num)
+	to_return = jdump(to_return)
+	localdb.session.close()
+	return make_json_response(to_return)
+
+@APP.route('/entry/id/<int:start_id>/<int:end_id>')
+def get_entry_list_by_ids(start_id, end_id):
+	"""Returns a list of entries, starting with the `start_id` and ending with the `end_id`."""
+	localdb = get_db()
+	to_return = localdb.get_id(start_id, end_id)
+	to_return = jdump(to_return)
 	localdb.session.close()
 	return make_json_response(to_return)
 
 
+
 @APP.route('/data_range/<float:begin>/<float:end>')
-def data_range(begin, end):
+def date_range(begin, end):
 	"""Returns all the location entries with timestamps between the given start
 	and end. Timestamps are in epoc format."""
 	localdb = get_db()
-	to_return = localdb.get_range(begin, end)
+	to_return = localdb.get_date_range(begin, end)
 	to_return = angles.calculate_bearing(to_return)
 	to_return = jdump(to_return)
 	localdb.session.close()
-	return to_return
+	return make_json_response(to_return)
 
 
 @APP.route('/last_range')
