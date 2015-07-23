@@ -1,5 +1,8 @@
+#!/bin/sh
+"exec" "python" "-B" "$0" "$@"
 from __future__ import print_function
 from flask import Flask, request
+import geo_statistics.angles as angles
 import geo_model
 import flask
 import json
@@ -59,15 +62,24 @@ def log_dict(in_dict):
 	record_file.close()
 	return
 
+
 def make_json_response(in_data):
 	"""Returns a proper json response out of the data in passed in."""
 	response = flask.make_response(in_data)
 	response.headers["Content-type"] = "application/json"
 	return response
 
+
 def jdump(in_data):
 	"""Creates prettified json representation of passed in object."""
 	return json.dumps(in_data, sort_keys=True, indent=4, separators=(',', ': '))
+
+
+@APP.route('/')
+def main_page():
+	"""Renders the main page."""
+	return flask.render_template("multi_map.html")
+
 
 @APP.route('/update', methods=['POST'])
 def update():
@@ -97,12 +109,13 @@ def all_positions():
 	localdb.session.close()
 	return make_json_response(all_data)
 
-@APP.route('/')
-def main_page():
-	"""Renders the main page."""
-	return flask.render_template("multi_map.html")
-
-import statistics_playground.angles as angles
+@APP.route('/entry/id/<int:id_num>')
+def get_entry_by_id(id_num):
+	"""Returns the entry with the given id."""
+	localdb = get_db()
+	to_return = localdb.get_id(id_num)
+	localdb.session.close()
+	return make_json_response(to_return)
 
 
 @APP.route('/data_range/<float:begin>/<float:end>')

@@ -61,9 +61,20 @@ class WhereisUnitTests(unittest.TestCase):
 		self.app.post('/update', data=new_data)
 		cur_pos = self.app.get('/currentpos')
 		cur_pos = json.loads(cur_pos.data)
-
 		assert a_subset_b(new_data, cur_pos)
-		
+	
+	def test_add_single(self):
+		"""Add a single entry, ensure that it's the only entry (aside from the seed data)."""
+		new_data = {
+			"latitude": "0.0",
+			"longitude": "0.0",
+			"time": "2010-01-01T12:00:00.00Z"
+		}
+		self.app.post('/update', data=new_data)
+		cur_pos = self.app.get('/currentpos')
+		cur_pos = json.loads(cur_pos.data)
+		# Sqlite indexing starts with 1, so the second entry has an id of 2.
+		assert cur_pos['id'] == 2
 
 
 

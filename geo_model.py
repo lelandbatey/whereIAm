@@ -76,6 +76,7 @@ class LocationEntry(BASE):
 		for key in self.data:
 			to_return[key] = self.data[key]
 		to_return['monotonic_timestamp'] = self.monotonic_timestamp
+		to_return['id'] = self.id_num
 		return to_return
 
 
@@ -143,6 +144,12 @@ class LocationModel(object):
 		to_return = [x.json for x in entries]
 		return to_return
 
+	def get_id(self, id_to_query):
+		"""Returns the LocationEntry object with the given id."""
+		entry = self.session.query(LocationEntry).filter(
+			LocationEntry.id_num == id_to_query
+		).first()
+		return entry.json
 
 
 
