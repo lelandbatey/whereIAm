@@ -107,6 +107,16 @@ class WhereisUnitTests(unittest.TestCase):
 			cur_ent = json.loads(cur_ent.data)
 			assert a_subset_b(new_data[x], cur_ent)
 
+	def test_vertify_get_id_range(self):
+		"""Add then get several entries in order."""
+		new_data = create_test_entries(15)
+		for d in new_data:
+			self.app.post('/update', data=d)
+		latest = json.loads(self.app.get('/entry').data)
+		entry_array = json.loads(self.app.get('/entry/id/2/{}'.format(latest['id'])).data)
+		for index, _ in enumerate(entry_array):
+			assert a_subset_b(new_data[index], entry_array[index])
+
 
 
 

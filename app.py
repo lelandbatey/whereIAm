@@ -91,6 +91,7 @@ def update():
 	localdb.session.close()
 	return ""
 
+@APP.route('/entry')
 @APP.route('/currentpos')
 def current_position():
 	"""Responds with the latest location in the database."""
@@ -122,7 +123,7 @@ def get_entry_by_id(id_num):
 def get_entry_list_by_ids(start_id, end_id):
 	"""Returns a list of entries, starting with the `start_id` and ending with the `end_id`."""
 	localdb = get_db()
-	to_return = localdb.get_id(start_id, end_id)
+	to_return = localdb.get_id_range(start_id, end_id)
 	to_return = jdump(to_return)
 	localdb.session.close()
 	return make_json_response(to_return)
