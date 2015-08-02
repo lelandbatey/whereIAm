@@ -127,6 +127,12 @@ def get_entry_list_by_ids(start_id, end_id):
 	to_return = AutoDB().get_id_range(start_id, end_id)
 	return make_json_response(to_return)
 
+@APP.route('/entry/time/<int:entry_time>')
+def get_entry_by_time(entry_time):
+	"""Returns the entry with the time nearest the given time"""
+	to_return = AutoDB().get_time(entry_time)
+	return make_json_response(to_return)
+
 
 
 @APP.route('/data_range/<float:begin>/<float:end>')

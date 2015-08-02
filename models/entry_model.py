@@ -162,6 +162,15 @@ class LocationModel(object):
 		to_return = [x.json for x in to_return]
 		return to_return
 
+	def get_time(self, ent_time):
+		"""Returns the entry with the time closest to the given time"""
+		query = self.session.query(LocationEntry).order_by(
+			"abs(monotonic_timestamp - {})".format(ent_time)
+		)
+		#print(str(query.statement.compile()))
+		entry = query.first()
+		return entry.json
+
 
 import math
 # Below taken from here:

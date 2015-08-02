@@ -25,13 +25,17 @@ def a_subset_b(a, b):
 			return False
 	return True
 
+def datetime_to_epoch(indate):
+	"""Converts a datetime object to an epoch timestamp."""
+	return (indate - datetime.datetime(1970, 1, 1)).total_seconds()
+
+def too_oddformat(moment):
+	return datetime.datetime.strftime(moment, "%Y-%m-%dT%H:%M:%S.%fZ")
+def from_oddformat(odd):
+	return datetime.datetime.strptime(odd, "%Y-%m-%dT%H:%M:%S.%fZ")
+
 
 def create_test_entries(count=1):
-	def too_oddformat(moment):
-		return datetime.datetime.strftime(moment, "%Y-%m-%dT%H:%M:%S.%fZ")
-	def from_oddformat(odd):
-		return datetime.datetime.strptime(odd, "%Y-%m-%dT%H:%M:%S.%fZ")
-	
 	starttime = from_oddformat("2010-01-01T12:00:00.00Z")
 
 	def base_data(k):
@@ -116,6 +120,27 @@ class WhereisUnitTests(unittest.TestCase):
 		entry_array = json.loads(self.app.get('/entry/id/2/{}'.format(latest['id'])).data)
 		for index, _ in enumerate(entry_array):
 			assert a_subset_b(new_data[index], entry_array[index])
+
+	def test_verify_get_time(self):
+		"""Check that looking up by time returns nearest time"""
+		one = {
+			"latitude": "0.0",
+			"longitude": "0.0",
+			"time": "2010-01-01T12:01:00.00Z"
+		}
+		two = {
+			"latitude": "0.0",
+			"longitude": "0.0",
+			"time": "2010-01-01T12:01:45.00Z"
+		}
+		self.app.post('/update', data=one)
+		self.app.post('/update', data=two)
+		epoch = int(datetime_to_epoch(from_oddformat(one['time'])))
+		t = '/entry/time/{}'.format(epoch + 10)
+		entry = self.app.get(t)
+		assert a_subset_b(two, json.loads(entry.data))
+
+
 
 
 
