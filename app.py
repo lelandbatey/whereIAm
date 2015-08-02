@@ -65,6 +65,8 @@ def log_dict(in_dict):
 
 def make_json_response(in_data):
 	"""Returns a proper json response out of the data in passed in."""
+	if not isinstance(in_data, basestring):
+		in_data = jdump(in_data)
 	response = flask.make_response(in_data)
 	response.headers["Content-type"] = "application/json"
 	return response
@@ -73,6 +75,18 @@ def make_json_response(in_data):
 def jdump(in_data):
 	"""Creates prettified json representation of passed in object."""
 	return json.dumps(in_data, sort_keys=True, indent=4, separators=(',', ': '))
+
+class AutoDB(object):
+	"""Shortens database calls by automatically creating and cleaning up the database"""
+	def __getattr__(self, name):
+		def db_func(*args, **kwargs):
+			db = get_db()
+			f = getattr(db, name)
+			rv = f(*args, **kwargs)
+			db.session.close()
+			return rv
+		return db_func
+
 
 
 @APP.route('/')
@@ -84,48 +98,33 @@ def main_page():
 @APP.route('/update', methods=['POST'])
 def update():
 	"""Logs the request to the log file, as well as adding it to he database."""
-	localdb = get_db()
-
-	localdb.new_entry(request.form)
+	AutoDB().new_entry(request.form)
 	log_dict(request.form)
-	localdb.session.close()
-	return ""
+	return "Success"
 
 @APP.route('/entry')
 @APP.route('/currentpos')
 def current_position():
 	"""Responds with the latest location in the database."""
-	localdb = get_db()
-
-	data = localdb.get_latest()
-	data = jdump(data)
-	localdb.session.close()
+	data = AutoDB().get_latest()
 	return make_json_response(data)
 
 @APP.route('/allpos')
 def all_positions():
 	"""Returns all the location entries in the database, serialized to JSON."""
-	localdb = get_db()
-	all_data = jdump(localdb.get_all())
-	localdb.session.close()
+	all_data = AutoDB().get_all()
 	return make_json_response(all_data)
 
 @APP.route('/entry/id/<int:id_num>')
 def get_entry_by_id(id_num):
 	"""Returns the entry with the given id."""
-	localdb = get_db()
-	to_return = localdb.get_id(id_num)
-	to_return = jdump(to_return)
-	localdb.session.close()
+	to_return = AutoDB().get_id(id_num)
 	return make_json_response(to_return)
 
 @APP.route('/entry/id/<int:start_id>/<int:end_id>')
 def get_entry_list_by_ids(start_id, end_id):
 	"""Returns a list of entries, starting with the `start_id` and ending with the `end_id`."""
-	localdb = get_db()
-	to_return = localdb.get_id_range(start_id, end_id)
-	to_return = jdump(to_return)
-	localdb.session.close()
+	to_return = AutoDB().get_id_range(start_id, end_id)
 	return make_json_response(to_return)
 
 
@@ -134,23 +133,16 @@ def get_entry_list_by_ids(start_id, end_id):
 def date_range(begin, end):
 	"""Returns all the location entries with timestamps between the given start
 	and end. Timestamps are in epoc format."""
-	localdb = get_db()
-	to_return = localdb.get_date_range(begin, end)
+	to_return = AutoDB().get_date_range(begin, end)
 	to_return = angles.calculate_bearing(to_return)
-	to_return = jdump(to_return)
-	localdb.session.close()
 	return make_json_response(to_return)
 
 
 @APP.route('/last_range')
 @APP.route('/last_range/<int:count>')
 def last_range(count=50):
-	localdb = get_db()
-	to_return = localdb.get_last_count(count)
+	to_return = AutoDB().get_last_count(count)
 	to_return = angles.calculate_bearing(to_return)
-	to_return = jdump(to_return)
-	print(to_return)
-	localdb.session.close()
 	return to_return
 
 if __name__ == '__main__':
