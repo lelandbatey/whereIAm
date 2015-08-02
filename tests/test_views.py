@@ -135,8 +135,8 @@ class WhereisUnitTests(unittest.TestCase):
 		}
 		self.app.post('/update', data=one)
 		self.app.post('/update', data=two)
-		epoch = int(datetime_to_epoch(from_oddformat(one['time'])))
-		t = '/entry/time/{}'.format(epoch + 10)
+		epoch = int(datetime_to_epoch(from_oddformat(one['time']))) 
+		t = '/entry/time/{}'.format(epoch + 30)
 		entry = self.app.get(t)
 		assert a_subset_b(two, json.loads(entry.data))
 

@@ -87,6 +87,18 @@ class AutoDB(object):
 			return rv
 		return db_func
 
+class AutoQuery(object):
+	"""Does everything for you."""
+	def __init__(self, before_hook=None):
+		self.before_hook = before_hook
+	def __getattr__(self, name):
+		def query_func(*args, **kwargs):
+			dbf = getattr(AutoDB(), name)
+			rv = dbf(*args, **kwargs)
+			if (self.before_hook):
+				rv = self.before_hook(rv)
+			return make_json_response(rv)
+		return query_func
 
 
 @APP.route('/')
@@ -106,32 +118,27 @@ def update():
 @APP.route('/currentpos')
 def current_position():
 	"""Responds with the latest location in the database."""
-	data = AutoDB().get_latest()
-	return make_json_response(data)
+	return AutoQuery().get_latest()
 
 @APP.route('/allpos')
 def all_positions():
 	"""Returns all the location entries in the database, serialized to JSON."""
-	all_data = AutoDB().get_all()
-	return make_json_response(all_data)
+	return AutoQuery().get_all()
 
 @APP.route('/entry/id/<int:id_num>')
 def get_entry_by_id(id_num):
 	"""Returns the entry with the given id."""
-	to_return = AutoDB().get_id(id_num)
-	return make_json_response(to_return)
+	return AutoQuery().get_id(id_num)
 
 @APP.route('/entry/id/<int:start_id>/<int:end_id>')
 def get_entry_list_by_ids(start_id, end_id):
 	"""Returns a list of entries, starting with the `start_id` and ending with the `end_id`."""
-	to_return = AutoDB().get_id_range(start_id, end_id)
-	return make_json_response(to_return)
+	return AutoQuery().get_id_range(start_id, end_id)
 
 @APP.route('/entry/time/<int:entry_time>')
 def get_entry_by_time(entry_time):
 	"""Returns the entry with the time nearest the given time"""
-	to_return = AutoDB().get_time(entry_time)
-	return make_json_response(to_return)
+	return AutoQuery().get_time(entry_time)
 
 
 
@@ -139,17 +146,13 @@ def get_entry_by_time(entry_time):
 def date_range(begin, end):
 	"""Returns all the location entries with timestamps between the given start
 	and end. Timestamps are in epoc format."""
-	to_return = AutoDB().get_date_range(begin, end)
-	to_return = angles.calculate_bearing(to_return)
-	return make_json_response(to_return)
+	return AutoQuery(angles.calculate_bearing).get_date_range(begin, end)
 
 
 @APP.route('/last_range')
 @APP.route('/last_range/<int:count>')
 def last_range(count=50):
-	to_return = AutoDB().get_last_count(count)
-	to_return = angles.calculate_bearing(to_return)
-	return to_return
+	return AutoQuery(angles.calculate_bearing).get_last_count(count)
 
 if __name__ == '__main__':
 	APP.run(host='0.0.0.0', port=8001, debug=True)
