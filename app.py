@@ -3,7 +3,7 @@
 from __future__ import print_function
 from flask import Flask, request
 import geo_statistics.angles as angles
-import geo_model
+import models.entry_model
 import flask
 import json
 
@@ -37,7 +37,7 @@ SEED_DATA = {
 
 def get_db():
 	"""Returns an instance of the database."""
-	database = geo_model.LocationModel(APP.config['DATABASE'])
+	database = models.entry_model.LocationModel(APP.config['DATABASE'])
 	database.add_if_empty(SEED_DATA)
 	return database
 
@@ -49,7 +49,7 @@ def dict_to_oneline(in_dict):
 	# The above list comprehension is the equivelent of the following
 	# for x in in_dict.keys():
 	# 	temp.append(str(x)+"="+str(in_dict[x]))
-	
+
 	ret_val = ','.join(temp)
 	return ret_val+'\n'
 

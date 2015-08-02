@@ -196,19 +196,19 @@ def distance_on_unit_sphere(lat1, long1, lat2, long2):
 	try:
 		arc = math.acos(cos)
 	except Exception, e:
-		print("Cos:", cos)
-		print(e)
+		#print("Cos:", cos)
+		#print(e)
 		raise e
 
 	# Remember to multiply arc by the radius of the earth
 	# in your favorite set of units to get length.
 	return arc
- 
+
 
 def get_speed(entry0, entry1):
-	"""Given two 'LocationEntry' objects, returns speed traveled between the 
+	"""Given two 'LocationEntry' objects, returns speed traveled between the
 	two them. Return value is in form of meters per second."""
-	
+
 	arc_distance = distance_on_unit_sphere(entry0.latitude, entry0.longitude, entry1.latitude, entry1.longitude)
 	# Multiplying the arc distance by the radius of the earth in meters. Gets
 	# us the distance in meters.
@@ -227,7 +227,7 @@ def speed_for_series(entries):
 
 	speed_sum = sum([x.data['speed'] for x in entries])
 	avg_speed = speed_sum/float(len(entries))
-	print("The sum of speeds is", speed_sum)
-	print("Number of entries:", len(entries))
-	print("The average speed for this range of data is: {} kilometers per hour.".format(avg_speed))
+	#print("The sum of speeds is", speed_sum)
+	#print("Number of entries:", len(entries))
+	#print("The average speed for this range of data is: {} kilometers per hour.".format(avg_speed))
 	return entries
