@@ -1,5 +1,8 @@
-
 import math
+
+#pylint: disable=W0312
+
+
 # Below taken from here:
 #     http://www.johndcook.com/blog/python_longitude_latitude/
 def distance_on_unit_sphere(lat1, long1, lat2, long2):
@@ -67,3 +70,17 @@ def speed_for_series(entries):
 	#print("Number of entries:", len(entries))
 	#print("The average speed for this range of data is: {} kilometers per hour.".format(avg_speed))
 	return entries
+
+def calculate_bearing(raw_data):
+	in_place_data = [x.copy() for x in raw_data]
+	for i in range(1, len(raw_data)):
+		first, second = raw_data[i-1], raw_data[i]
+		lat1, lon1 = float(first['latitude']), float(first['longitude'])
+		lat2, lon2 = float(second['latitude']), float(second['longitude'])
+		dLon = lon2 - lon1
+		y = math.sin(dLon) * math.cos(lat2)
+		x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1)*math.cos(lat2)*math.cos(dLon)
+		bearing = math.atan2(y, x)
+		# print(bearing)
+		in_place_data[i]['derived_bearing'] = bearing
+	return in_place_data

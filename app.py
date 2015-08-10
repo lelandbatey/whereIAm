@@ -2,8 +2,7 @@
 "exec" "python" "-B" "$0" "$@"
 from __future__ import print_function
 from flask import Flask, request
-import geo_statistics.angles as angles
-import models.entry_model
+from models import geo_utils, entry_model
 import flask
 import json
 
@@ -37,7 +36,7 @@ SEED_DATA = {
 
 def get_db():
 	"""Returns an instance of the database."""
-	database = models.entry_model.LocationModel(APP.config['DATABASE'])
+	database = entry_model.LocationModel(APP.config['DATABASE'])
 	database.add_if_empty(SEED_DATA)
 	return database
 
@@ -77,14 +76,14 @@ def jdump(in_data):
 	return json.dumps(in_data, sort_keys=True, indent=4, separators=(',', ': '))
 
 class AutoDB(object):
-	"""Shortens database calls by automatically creating and cleaning up the database"""
+	"""Eases database calls by handling creation and cleanup of database"""
 	def __getattr__(self, name):
 		def db_func(*args, **kwargs):
-			db = get_db()
-			f = getattr(db, name)
-			rv = f(*args, **kwargs)
-			db.session.close()
-			return rv
+			database = get_db()
+			db_method = getattr(database, name)
+			return_value = db_method(*args, **kwargs)
+			database.session.close()
+			return return_value
 		return db_func
 
 class AutoQuery(object):
@@ -94,10 +93,10 @@ class AutoQuery(object):
 	def __getattr__(self, name):
 		def query_func(*args, **kwargs):
 			dbf = getattr(AutoDB(), name)
-			rv = dbf(*args, **kwargs)
-			if (self.before_hook):
-				rv = self.before_hook(rv)
-			return make_json_response(rv)
+			return_value = dbf(*args, **kwargs)
+			if self.before_hook:
+				return_value = self.before_hook(return_value)
+			return make_json_response(return_value)
 		return query_func
 
 
@@ -132,7 +131,7 @@ def get_entry_by_id(id_num):
 
 @APP.route('/entry/id/<int:start_id>/<int:end_id>')
 def get_entry_list_by_ids(start_id, end_id):
-	"""Returns a list of entries, starting with the `start_id` and ending with the `end_id`."""
+	"""Return list of entries, starting with `start_id` and ending with `end_id`."""
 	return AutoQuery().get_id_range(start_id, end_id)
 
 @APP.route('/entry/time/<int:entry_time>')
@@ -140,19 +139,18 @@ def get_entry_by_time(entry_time):
 	"""Returns the entry with the time nearest the given time"""
 	return AutoQuery().get_time(entry_time)
 
-
-
-@APP.route('/data_range/<float:begin>/<float:end>')
+@APP.route('/entry/time/<int:begin>/<int:end>')
+@APP.route('/data_range/<int:begin>/<int:end>')
 def date_range(begin, end):
 	"""Returns all the location entries with timestamps between the given start
 	and end. Timestamps are in epoc format."""
-	return AutoQuery(angles.calculate_bearing).get_date_range(begin, end)
+	return AutoQuery(geo_utils.calculate_bearing).get_date_range(begin, end)
 
 
 @APP.route('/last_range')
 @APP.route('/last_range/<int:count>')
 def last_range(count=50):
-	return AutoQuery(angles.calculate_bearing).get_last_count(count)
+	return AutoQuery(geo_utils.calculate_bearing).get_last_count(count)
 
 if __name__ == '__main__':
 	APP.run(host='0.0.0.0', port=8001, debug=True)

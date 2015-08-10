@@ -111,7 +111,7 @@ class WhereisUnitTests(unittest.TestCase):
 			cur_ent = json.loads(cur_ent.data)
 			assert a_subset_b(new_data[x], cur_ent)
 
-	def test_vertify_get_id_range(self):
+	def test_verify_get_id_range(self):
 		"""Add then get several entries in order."""
 		new_data = create_test_entries(15)
 		for d in new_data:
@@ -140,6 +140,23 @@ class WhereisUnitTests(unittest.TestCase):
 		entry = self.app.get(t)
 		assert a_subset_b(two, json.loads(entry.data))
 
+	def test_verify_get_time_range(self):
+		"""Check that querying by time range returns entries within bounds."""
+		new_data = create_test_entries(15)
+		for d in new_data:
+			self.app.post('/update', data=d)
+		def get_epoch(val): return int(datetime_to_epoch(from_oddformat(val['time'])))
+		first, last = new_data[0], new_data[-1]
+		first, last = get_epoch(first), get_epoch(last)
+		first += 1
+		last -= 1
+		query_str = '/entry/time/{}/{}'.format(first, last)
+		entries = json.loads(self.app.get(query_str).data)
+		good_range = new_data[1:-1]
+
+		assert len(entries) == len(good_range)
+		for index, _ in enumerate(good_range):
+			assert a_subset_b(good_range[index], entries[index])
 
 
 
