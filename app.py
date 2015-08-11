@@ -134,16 +134,18 @@ def get_entry_list_by_ids(start_id, end_id):
 	"""Return list of entries, starting with `start_id` and ending with `end_id`."""
 	return AutoQuery().get_id_range(start_id, end_id)
 
-@APP.route('/entry/time/<int:entry_time>')
+@APP.route('/entry/time/<entry_time>')
 def get_entry_by_time(entry_time):
 	"""Returns the entry with the time nearest the given time"""
+	entry_time = float(entry_time)
 	return AutoQuery().get_time(entry_time)
 
-@APP.route('/entry/time/<int:begin>/<int:end>')
-@APP.route('/data_range/<int:begin>/<int:end>')
+@APP.route('/entry/time/<begin>/<end>')
+@APP.route('/data_range/<begin>/<end>')
 def date_range(begin, end):
 	"""Returns all the location entries with timestamps between the given start
 	and end. Timestamps are in epoc format."""
+	begin, end = float(begin), float(end)
 	return AutoQuery(geo_utils.calculate_bearing).get_date_range(begin, end)
 
 

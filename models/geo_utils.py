@@ -1,3 +1,4 @@
+from __future__ import print_function
 import math
 
 #pylint: disable=W0312
@@ -10,6 +11,9 @@ def distance_on_unit_sphere(lat1, long1, lat2, long2):
 	'arc length' format that's relative to the radius of earth. To get the
 	distance in miles, multiply the result by 3960, while to get the distance
 	in kilometers multiply the result by 6373."""
+
+	lat1, long1 = float(lat1), float(long1)
+	lat2, long2 = float(lat2), float(long2)
 	# Convert latitude and longitude to
 	# spherical coordinates in radians.
 	degrees_to_radians = math.pi/180.0
@@ -65,7 +69,13 @@ def speed_for_series(entries):
 		entries[i+1].data['speed'] = kilometers_ph
 
 	speed_sum = sum([x.data['speed'] for x in entries])
-	avg_speed = speed_sum/float(len(entries))
+	try:
+		avg_speed = speed_sum/float(len(entries))
+	except Exception as e:
+		print("speed_sum:", speed_sum)
+		print('entries:', entries)
+		print('float(len(entries)):', float(len(entries)))
+		raise e
 	#print("The sum of speeds is", speed_sum)
 	#print("Number of entries:", len(entries))
 	#print("The average speed for this range of data is: {} kilometers per hour.".format(avg_speed))
