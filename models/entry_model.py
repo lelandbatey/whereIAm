@@ -89,6 +89,7 @@ class LocationModel(object):
 		self.session_class = sessionmaker()
 		self.session_class.configure(bind=self.db)
 		self.session = self.session_class()
+		self.latest_epoch = 0
 		# Creates database with tables, unless they already exist.
 		LocationEntry.metadata.create_all(self.db, checkfirst=True)
 
@@ -102,7 +103,11 @@ class LocationModel(object):
 	def new_entry(self, request, commit=True):
 		"""Stores a request into the database."""
 		entry = LocationEntry(request)
-		self.session.add(entry)
+		if self.latest_epoch and entry.monotonic_timestamp < self.latest_epoch:
+			print("Entry was received after another entry with an earlier timestamp.")
+		else:
+			self.latest_epoch = entry.monotonic_timestamp
+			self.session.add(entry)
 		if commit:
 			self.session.commit()
 
@@ -129,7 +134,10 @@ class LocationModel(object):
 		entry = self.session.query(LocationEntry)\
 		            .order_by(LocationEntry.id_num.desc())\
 		            .first()
-		return entry.json
+		if entry:
+			return entry.json
+		else:
+			return entry
 
 	def get_last_count(self, count=50):
 		"""Gets the latest `count` number of LocationEntrys."""

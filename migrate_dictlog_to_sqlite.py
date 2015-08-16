@@ -1,5 +1,5 @@
 from __future__ import print_function
-import geo_model
+from models import entry_model
 import datetime
 import json
 #pylint: disable=W0312
@@ -39,12 +39,10 @@ def log_to_dict(filename='gpsRecord.log'):
 
 
 
-
-
 def main():
 	old_log = log_to_dict()
 
-	model = geo_model.LocationModel()
+	model = entry_model.LocationModel()
 	for index, value in enumerate(old_log):
 		if not index % 1000:
 			print("{:<8} entries".format(index))
