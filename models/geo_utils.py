@@ -56,7 +56,17 @@ def get_speed(entry0, entry1):
 	# Multiplying the arc distance by the radius of the earth in meters. Gets
 	# us the distance in meters.
 	distance = arc_distance * 6378100
+	distance = round(distance, 4)
 	time = entry1.monotonic_timestamp - entry0.monotonic_timestamp
+	if distance == 0.0:
+		return 0.0
+	speed = distance / time
+	if speed < 0.0:
+		print('distance:', distance)
+		print('speed:', speed)
+		print('time:', time)
+		print('ts0:', entry0.monotonic_timestamp)
+		print('ts1:', entry1.monotonic_timestamp)
 	return distance / time
 
 def speed_for_series(entries):
@@ -94,3 +104,55 @@ def calculate_bearing(raw_data):
 		# print(bearing)
 		in_place_data[i]['derived_bearing'] = bearing
 	return in_place_data
+
+
+def get_candidates(data, index, winlen):
+	assert (winlen % 2) == 1
+	middle = winlen // 2
+
+	too_short = False
+	too_long = False
+	start = index-middle
+	if start < 0:
+		start = 0
+		too_short = True
+	end = index+middle
+	if end > len(data)-1:
+		end = len(data)-1
+		too_long = True
+
+	calc_desired = end - start+1
+	candidates = []
+	while len(candidates) < calc_desired:
+		candidates.append(data[start])
+		start += 1
+
+	while len(candidates) < winlen:
+		if too_short:
+			candidates.insert(0, candidates[0])
+		if too_long and len(candidates) < winlen:
+			candidates.append(candidates[-1])
+
+	assert len(candidates) == winlen
+	return candidates
+
+
+def median_filter(data, winlen=3):
+	medians = []
+	middle = winlen // 2
+
+	for item in range(0, len(data)):
+		candidates = sorted(get_candidates(data, item, winlen))
+		medians.append(candidates[middle])
+	return medians
+
+
+def format_xy_matplotlib(rawxy):
+	y, x = zip(*rawxy)
+	x = [-n for n in x]
+	return x, y
+
+def mean(data, accessor=lambda x: x):
+	data = [accessor(item) for item in data]
+	m = float(sum(data))/len(data) if len(data) > 0 else float('nan')
+	return m
