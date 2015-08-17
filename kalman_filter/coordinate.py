@@ -1,3 +1,11 @@
+"""
+
+Wraps a simple list-based representation of an xy coordinate in an object to
+properly handle coordinate addition, subtraction, multiplication. Lets
+coordinates be passed to a KalmanFilter without breaking the KalmanFilter.
+
+"""
+
 from __future__ import print_function
 from numbers import Real
 

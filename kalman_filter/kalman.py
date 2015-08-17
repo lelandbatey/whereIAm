@@ -1,5 +1,9 @@
 from __future__ import print_function
 
+# This Kalman Filter implementation comes from Scott Lobdell, specifically
+# this post:
+#     http://scottlobdell.me/2014/08/kalman-filtering-python-reading-sensor-input/
+
 class KalmanFilter(object):
     def __init__(self, process_variance, estimated_measurement_variance):
         self.process_variance = process_variance

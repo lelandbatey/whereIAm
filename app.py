@@ -5,17 +5,20 @@ from flask import Flask, request
 from models import geo_utils, entry_model
 import flask
 import json
+from os.path import dirname, realpath, join
 
 #pylint: disable=W0312
 #pylint: disable=C0330
 
 # LOG_FILE_NAME = "gpsRecord.log"
 
+# print('Default db location:', join(dirname(realpath(__file__)), "location_database.sqlite3"))
+
 APP = Flask(__name__)
 
 APP.config.update(dict(
 	LOG_FILE_PATH="gpsRecord.log",
-	DATABASE="location_database.sqlite3"
+	DATABASE=join(dirname(realpath(__file__)), "location_database.sqlite3")
 ))
 
 

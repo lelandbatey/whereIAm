@@ -6,14 +6,14 @@ from segment import Segment
 class SegmentSeries(object):
 	"""A series of segments and data about those segments."""
 	def __init__(self,
-		     model,
-		     entries=None,
-
-		     start_time=None,
-		     stop_time=None,
-
-		     start_id=None,
-		     stop_id=None):
+	             model,
+	             entries=None,
+	             start_time=None,
+	             stop_time=None,
+	             start_id=None,
+	             stop_id=None,
+	             filter_outliers=False
+	            ):
 
 		self.entries = entries
 		self.model = model
@@ -26,7 +26,8 @@ class SegmentSeries(object):
 		self.entries = geo_utils.calculate_bearing(self.entries)
 
 		self._init_segments()
-		self._filter_bad()
+		if filter_outliers:
+			self._filter_bad()
 		self._init_xy_coords()
 		self._init_speeds()
 		self.ids = [ent['id'] for ent in self.entries[1:]]
@@ -66,7 +67,9 @@ class SegmentSeries(object):
 			mid = sel[middle]
 			pre_mean = geo_utils.mean(pre, lambda x: max(1, x.speed))
 			post_mean = geo_utils.mean(post, lambda x: max(1, x.speed))
-			if mid.speed > (20*pre_mean) or mid.speed > (20*post_mean):
+			if mid.speed > (20*pre_mean) or \
+			   mid.speed > (20*post_mean) or \
+			   mid.speed > 260:
 				bad = None
 				for ent in self.entries:
 					if mid.end['id'] == ent['id']:
@@ -75,20 +78,20 @@ class SegmentSeries(object):
 					raise Exception("How could we not find the index if we found the object?!")
 				bad_entries.append(bad)
 				#del self.entries[bad]
-				print('sel:', [s.speed for s in sel])
-				print("pre:", [p.speed for p in pre])
-				print("post:", [p.speed for p in post])
-				print('mid:', mid.speed)
-				print('bad:', self.segments[bad-1].speed)
-				print("cur/total: {} / {}".format(seg, len(self.segments)))
+				# print('sel:', [s.speed for s in sel])
+				# print("pre:", [p.speed for p in pre])
+				# print("post:", [p.speed for p in post])
+				# print('mid:', mid.speed)
+				# print('bad:', self.segments[bad-1].speed)
+				# print("cur/total: {} / {}".format(seg, len(self.segments)))
 				#self._init_segments()
 				#self._filter_bad()
 				#return
 		delcount = 0
 		for bent in bad_entries:
 			bent = bent-delcount
-			print([s.speed for s in self.segments[delcount+bent-5:delcount+bent+5]])
-			print("speed:", self.segments[delcount+bent-1].speed)
+			# print([s.speed for s in self.segments[delcount+bent-5:delcount+bent+5]])
+			# print("speed:", self.segments[delcount+bent-1].speed)
 			assert self.entries[bent] == self.segments[delcount+bent-1].end
 			del self.entries[bent]
 			delcount += 1
