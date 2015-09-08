@@ -27,9 +27,9 @@ def main():
 	                       stop_time=init_time.end,
 	                       filter_outliers=True
 	                       )
-	moving = series.get_moving_segments()
+	moving = series.get_all_moving_segments()
 	moving_coords = [[seg.x, seg.y] for seg in moving]
-	motionless_coords = [[seg.x, seg.y] for seg in series.get_motionless_segments()]
+	motionless_coords = [[seg.x, seg.y] for seg in series.get_all_motionless_segments()]
 
 	motx, moty = geo_utils.format_xy_matplotlib(motionless_coords)
 	movx, movy = geo_utils.format_xy_matplotlib(moving_coords)

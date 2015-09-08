@@ -71,11 +71,11 @@ def get_speed(entry0, entry1):
 
 def speed_for_series(entries):
 	"""Function prints information on a series of 'LocationEntry' objects."""
+	raise NotImplementedError
 	for i in range(0, len(entries)-2):
 		speed_meters_ps = get_speed(entries[i], entries[i+1])
-		# print("Speed in m/s:", speed_meters_ps)
 		kilometers_ph = (speed_meters_ps * 3600.0) / 1000
-		# print("Speed in k/h:", kilometers_ph)
+		# Should not modify the in-place data...
 		entries[i+1].data['speed'] = kilometers_ph
 
 	speed_sum = sum([x.data['speed'] for x in entries])
@@ -86,9 +86,6 @@ def speed_for_series(entries):
 		print('entries:', entries)
 		print('float(len(entries)):', float(len(entries)))
 		raise e
-	#print("The sum of speeds is", speed_sum)
-	#print("Number of entries:", len(entries))
-	#print("The average speed for this range of data is: {} kilometers per hour.".format(avg_speed))
 	return entries
 
 def calculate_bearing(raw_data):

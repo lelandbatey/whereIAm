@@ -8,6 +8,6 @@ class Bunch(object):
 			self.__dict__[v] = func(self.__dict__[v])
 
 
-from segment_series import SegmentSeries
+from segment_series import SegmentSeries, CoordinateCollection
 from segment import Segment
 

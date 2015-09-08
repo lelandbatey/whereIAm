@@ -2,6 +2,22 @@ from __future__ import print_function
 import geo_utils
 from segment import Segment
 
+class CoordinateCollection(object):
+	"""A collection of xy coordinates."""
+	def __init__(self, coords):
+		self.coords = coords
+	def __getitem__(self, index):
+		return self.coords[index]
+	def __setitem__(self, key, value):
+		self.coords[key] = value
+	def __getattr__(self, name):
+		return self.coords.attr
+	def __str__(self):
+		return str(self.coords)
+	def center(self):
+		xmean = geo_utils.mean(self.coords, lambda i: i[0])
+		ymean = geo_utils.mean(self.coords, lambda i: i[1])
+		return [xmean, ymean]
 
 class SegmentSeries(object):
 	"""A series of segments and data about those segments."""
@@ -104,13 +120,19 @@ class SegmentSeries(object):
 		return medians
 
 	def get_moving_ids(self):
-		return [seg.index for seg in self.get_moving_segments()]
+		return [seg.index for seg in self.get_all_moving_segments()]
 	
-	def get_moving_segments(self):
-		return self.get_segments_by_speed(1, 1000)
+	def get_all_moving_segments(self):
+		segs = self.get_segments_by_speed(1, 1000)
+		rv = []
+		for s in segs: rv += s
+		return rv
 
-	def get_motionless_segments(self):
-		return self.get_segments_by_speed(-1, 0.99999)
+	def get_all_motionless_segments(self):
+		segs = self.get_segments_by_speed(-1, 0.99999)
+		rv = []
+		for s in segs: rv += s
+		return rv
 
 	def get_segments_by_speed(self, minspeed, maxspeed):
 		segments = []
@@ -123,7 +145,7 @@ class SegmentSeries(object):
 				del tmp
 				tmp = []
 			if len(tmp) > 2:
-				segments += tmp
+				segments.append(tmp)
 				del tmp
 				tmp = []
 		return segments

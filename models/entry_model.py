@@ -54,7 +54,6 @@ class LocationEntry(BASE):
 	# those parameters are not garuanteed to be sent. For that reason, we will
 	# store the raw request from the client in JSON form here
 	raw_request = Column(String)
-	data = {}
 
 	def __init__(self, raw_request):
 		"""Translates dict of values into DB object."""
@@ -68,14 +67,11 @@ class LocationEntry(BASE):
 				break
 		self.parsed_timestamp = datetime.datetime.strptime(self.timestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
 		self.monotonic_timestamp = datetime_to_epoch(self.parsed_timestamp)
-		self.data = {}
 
 	@property
 	def json(self):
 		"""Returns json object representation of object."""
 		to_return = json.loads(self.raw_request)
-		for key in self.data:
-			to_return[key] = self.data[key]
 		to_return['monotonic_timestamp'] = self.monotonic_timestamp
 		to_return['id'] = self.id_num
 		return to_return
@@ -122,11 +118,7 @@ class LocationModel(object):
 			LocationEntry.monotonic_timestamp <= end_date
 		)
 		to_return = [x for x in entries]
-		to_return = geo_utils.speed_for_series(to_return)
 		to_return = [x.json for x in to_return]
-		# Removes data from when not moving.
-		# to_return = [x for x in to_return if float(x['bearing']) != 0]
-		# jp(to_return)
 		return to_return
 
 	def get_latest(self):
@@ -167,7 +159,6 @@ class LocationModel(object):
 			LocationEntry.id_num <= end_id
 		)
 		to_return = [x for x in entries]
-		to_return = geo_utils.speed_for_series(to_return)
 		to_return = [x.json for x in to_return]
 		return to_return
 
