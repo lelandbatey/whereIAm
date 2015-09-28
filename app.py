@@ -1,5 +1,4 @@
-#!/bin/sh
-"exec" "python" "-B" "$0" "$@"
+#!/usr/bin/env
 from __future__ import print_function
 from flask import Flask, request
 from models import geo_utils, entry_model
@@ -12,7 +11,6 @@ from os.path import dirname, realpath, join
 
 # LOG_FILE_NAME = "gpsRecord.log"
 
-# print('Default db location:', join(dirname(realpath(__file__)), "location_database.sqlite3"))
 
 APP = Flask(__name__)
 
@@ -33,8 +31,6 @@ SEED_DATA = {
 	"speed"     : "0.0",
 	"time"      : "2014-02-20T04:55:49.603Z"
 }
-
-# GPS_DATA = [SEED_DATA]
 
 
 def get_db():
@@ -66,7 +62,7 @@ def log_dict(in_dict):
 
 
 def make_json_response(in_data):
-	"""Returns a proper json response out of the data in passed in."""
+	"""Returns a proper json response out of the data passed in."""
 	if not isinstance(in_data, basestring):
 		in_data = jdump(in_data)
 	response = flask.make_response(in_data)
@@ -106,7 +102,7 @@ class AutoQuery(object):
 @APP.route('/')
 def main_page():
 	"""Renders the main page."""
-	return flask.render_template("multi_map.html")
+	return flask.render_template("mainpage.html")
 
 
 @APP.route('/update', methods=['POST'])
