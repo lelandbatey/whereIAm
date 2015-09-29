@@ -100,7 +100,8 @@ class LocationModel(object):
 		"""Stores a request into the database."""
 		entry = LocationEntry(request)
 		if self.latest_epoch and entry.monotonic_timestamp < self.latest_epoch:
-			print("Entry was received after another entry with an earlier timestamp.")
+			print("Entry was received after another entry with a later timestamp.")
+			print('Entry:{} latest:{}'.format(entry.monotonic_timestamp, self.latest_epoch))
 		else:
 			self.latest_epoch = entry.monotonic_timestamp
 			self.session.add(entry)

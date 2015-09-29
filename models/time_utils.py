@@ -17,6 +17,13 @@ def simplefmt_in_pdt_to_utc_epoch(moment):
 	return datetime_to_epoch(t)
 
 
+def datetime_to_oddformat(moment):
+	"""Converts datetime object to format %Y-%m-%dT%H:%M:%S.%fZ"""
+	return datetime.datetime.strftime(moment, "%Y-%m-%dT%H:%M:%S.%fZ")
+def oddformat_to_datetime(odd):
+	"""Converts string in %Y-%m-%dT%H:%M:%S.%fZ to datetime"""
+	return datetime.datetime.strptime(odd, "%Y-%m-%dT%H:%M:%S.%fZ")
+
 
 def simplefmt_to_datetime(moment):
 	"""Converts string in %H:%M:%S %d-%m-%y to datetime"""
