@@ -32,7 +32,7 @@ class Segment(object):
 		) * 6378100
 		self.bearing = float(self.stop.derived_bearing)
 		self.time_dist = self.stop.monotonic_timestamp - self.start.monotonic_timestamp
-		assert not self.time_dist < 0.0, "start: {}, end: {}".format(self.begin['id'], self.end['id'])
+		assert not self.time_dist < 0.0, "start: {} {}, end: {} {}".format(self.begin['id'], self.start.monotonic_timestamp, self.end['id'], self.stop.monotonic_timestamp)
 		self.speed = geo_utils.get_speed(self.start, self.stop)
 		assert not self.speed < 0.0
 		#self.x = (180 + float(self.start.longitude)) / 360

@@ -116,7 +116,7 @@ class LocationModel(object):
 		entries = self.session.query(LocationEntry).filter(
 			LocationEntry.monotonic_timestamp >= begin_date,
 			LocationEntry.monotonic_timestamp <= end_date
-		)
+		).order_by(LocationEntry.monotonic_timestamp)
 		to_return = [x for x in entries]
 		to_return = [x.json for x in to_return]
 		return to_return
@@ -157,7 +157,7 @@ class LocationModel(object):
 		entries = self.session.query(LocationEntry).filter(
 			LocationEntry.id_num >= start_id,
 			LocationEntry.id_num <= end_id
-		)
+		).order_by(LocationEntry.monotonic_timestamp)
 		to_return = [x for x in entries]
 		to_return = [x.json for x in to_return]
 		return to_return

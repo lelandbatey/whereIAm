@@ -8,7 +8,7 @@ import sys
 sys.path.append('../')
 
 from models import Bunch, SegmentSeries, time_utils
-from kalman_filter import KalmanFilter, Coordinate
+from models.kalman_filter import KalmanFilter, Coordinate
 import matplotlib.pyplot as plt
 import app as whereis
 
