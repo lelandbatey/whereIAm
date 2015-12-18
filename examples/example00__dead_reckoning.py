@@ -9,7 +9,7 @@ from __future__ import print_function
 import sys
 sys.path.append('../')
 
-from models import Bunch, Segment, geo_utils, time_utils
+from models import Bunch, Segment, SegmentSeries, geo_utils, time_utils
 import matplotlib.pyplot as plt
 import app as whereis
 
@@ -30,7 +30,7 @@ def increment_epoch_by_day(ts, count=1):
 def main():
 
 	init_time = Bunch(\
-	                  start="09:00:00 02-07-15",
+	                  start="08:59:00 02-07-15",
 	                  end="19:00:00 02-07-15"
 	                 )
 	init_time.set_in_place(time_utils.simplefmt_in_pdt_to_utc_epoch)
@@ -44,11 +44,12 @@ def main():
 	entries += whereis.AutoDB().get_date_range(begin, end)
 	print('Retrieved entries from database')
 
-	entries = geo_utils.calculate_bearing(entries)
+	# entries = geo_utils.calculate_bearing(entries)
 	print('Calculated bearing for all data')
 	series = []
 
-	for entry in entries:
+	for index in range(1, len(entries)):
+	# for entry in entries:
 		# When passed only an entry id, a Segment looks up the previous id and
 		# uses that for it's starting entry. So if you pass an `id` for
 		# `Entry_n`, it looks up `Entry_n-1` and uses that as it's starting
@@ -58,7 +59,7 @@ def main():
 		# Note also that this example runs extremely slowly since AutoDB
 		# automatically creates and closes the database connection for every
 		# query. So each segment means a new disk read.
-		seg = Segment(entry['id'], whereis.AutoDB())
+		seg = Segment([entries[index-1], entries[index]], whereis.AutoDB())
 		series.append(seg)
 	print('Created segments')
 
@@ -68,6 +69,7 @@ def main():
 		x = series[i].x
 		y = series[i].y
 		coords.append([x+coords[i][0], y+coords[i][1]])
+	# coords = series.xy_coords
 	print('Created xy coords')
 
 	ylist, xlist = zip(*coords)

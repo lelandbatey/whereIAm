@@ -67,26 +67,27 @@ def get_speed(entry0, entry1):
 		print('time:', time)
 		print('ts0:', entry0.monotonic_timestamp)
 		print('ts1:', entry1.monotonic_timestamp)
+		raise ValueError("Speed is somehow less than zero")
 	return distance / time
 
-def speed_for_series(entries):
-	"""Function prints information on a series of 'LocationEntry' objects."""
-	raise NotImplementedError
-	for i in range(0, len(entries)-2):
-		speed_meters_ps = get_speed(entries[i], entries[i+1])
-		kilometers_ph = (speed_meters_ps * 3600.0) / 1000
-		# Should not modify the in-place data...
-		entries[i+1].data['speed'] = kilometers_ph
+# def speed_for_series(entries):
+	# """Function prints information on a series of 'LocationEntry' objects."""
+	# raise NotImplementedError
+	# for i in range(0, len(entries)-2):
+		# speed_meters_ps = get_speed(entries[i], entries[i+1])
+		# kilometers_ph = (speed_meters_ps * 3600.0) / 1000
+		# # Should not modify the in-place data...
+		# entries[i+1].data['speed'] = kilometers_ph
 
-	speed_sum = sum([x.data['speed'] for x in entries])
-	try:
-		avg_speed = speed_sum/float(len(entries))
-	except Exception as e:
-		print("speed_sum:", speed_sum)
-		print('entries:', entries)
-		print('float(len(entries)):', float(len(entries)))
-		raise e
-	return entries
+	# speed_sum = sum([x.data['speed'] for x in entries])
+	# try:
+		# avg_speed = speed_sum/float(len(entries))
+	# except Exception as e:
+		# print("speed_sum:", speed_sum)
+		# print('entries:', entries)
+		# print('float(len(entries)):', float(len(entries)))
+		# raise e
+	# return entries
 
 def calculate_bearing(raw_data):
 	in_place_data = [x.copy() for x in raw_data]
@@ -103,45 +104,6 @@ def calculate_bearing(raw_data):
 	return in_place_data
 
 
-def get_candidates(data, index, winlen):
-	assert (winlen % 2) == 1
-	middle = winlen // 2
-
-	too_short = False
-	too_long = False
-	start = index-middle
-	if start < 0:
-		start = 0
-		too_short = True
-	end = index+middle
-	if end > len(data)-1:
-		end = len(data)-1
-		too_long = True
-
-	calc_desired = end - start+1
-	candidates = []
-	while len(candidates) < calc_desired:
-		candidates.append(data[start])
-		start += 1
-
-	while len(candidates) < winlen:
-		if too_short:
-			candidates.insert(0, candidates[0])
-		if too_long and len(candidates) < winlen:
-			candidates.append(candidates[-1])
-
-	assert len(candidates) == winlen
-	return candidates
-
-
-def median_filter(data, winlen=3):
-	medians = []
-	middle = winlen // 2
-
-	for item in range(0, len(data)):
-		candidates = sorted(get_candidates(data, item, winlen))
-		medians.append(candidates[middle])
-	return medians
 
 
 def format_xy_matplotlib(rawxy):
@@ -153,3 +115,4 @@ def mean(data, accessor=lambda x: x):
 	data = [accessor(item) for item in data]
 	m = float(sum(data))/len(data) if len(data) > 0 else float('nan')
 	return m
+

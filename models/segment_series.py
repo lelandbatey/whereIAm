@@ -69,7 +69,7 @@ class SegmentSeries(object):
 
 	def _init_speeds(self):
 		self.speeds = [seg.speed for seg in self.segments]
-	
+
 	def _filter_bad(self):
 		"""Removes entries that are outliers in terms of speed."""
 		bad_entries = []
@@ -121,7 +121,7 @@ class SegmentSeries(object):
 
 	def get_moving_ids(self):
 		return [seg.index for seg in self.get_all_moving_segments()]
-	
+
 	def get_all_moving_segments(self):
 		segs = self.get_segments_by_speed(1, 1000)
 		rv = []
