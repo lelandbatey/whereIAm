@@ -39,7 +39,7 @@ def graph_kalman_gps(coords, fpath, xlim, ylim, dpi=2000, process_variance=50, e
 
 	fig, ax = plt.subplots()
 
-	ax.plot(kalmanx, kalmany, 
+	ax.plot(kalmanx, kalmany,
 	        color='r',
 	        marker='o',
 	        markersize=0.25,
@@ -56,7 +56,7 @@ def graph_kalman_gps(coords, fpath, xlim, ylim, dpi=2000, process_variance=50, e
 	ax.set_xlim(xlim)
 	ax.set_ylim(ylim)
 
-	# Uncomment the below lines to hide the axis labels 
+	# Uncomment the below lines to hide the axis labels
 	# ax.set_yticklabels([])
 	# ax.set_xticklabels([])
 	# ax.get_xaxis().set_ticks([])
@@ -77,7 +77,7 @@ def main():
 	end = increment_epoch_by_day(init_time.end, 5)
 	print('begin_UTC_Epoch:', begin)
 	print('end_UTC_Epoch:', end)
-	
+
 	series = SegmentSeries(whereis.AutoDB(), start_time=begin, stop_time=end)
 	print("Built SegmentSeries from database.")
 	coords = series.xy_coords
