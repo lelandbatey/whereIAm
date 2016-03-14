@@ -9,11 +9,9 @@ import datetime
 import os.path
 import random
 import json
-import sys
 import os
-sys.path.append('../')
 
-import app as whereis
+from .. import frontend as whereis
 #pylint: disable=W0312
 #pylint: disable=C0330
 

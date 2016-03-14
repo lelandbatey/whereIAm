@@ -1,22 +1,27 @@
-#!/usr/bin/env
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Frontend for whereIAm, exposing http api for getting locations"""
+
 from __future__ import print_function
-from flask import Flask, request
-from models import geo_utils, entry_model
-import flask
-import json
 from os.path import dirname, realpath, join
+
+import flask
+
+from ..models import geo_utils, entry_model
 
 #pylint: disable=W0312
 #pylint: disable=C0330
 
-# LOG_FILE_NAME = "gpsRecord.log"
 
+APP = flask.Flask(__name__,
+	template_folder=join(dirname(realpath(__file__)), "templates"),
+	static_folder=join(dirname(realpath(__file__)), "static"))
 
-APP = Flask(__name__)
 
 APP.config.update(dict(
 	LOG_FILE_PATH="gpsRecord.log",
-	DATABASE=join(dirname(realpath(__file__)), "location_database.sqlite3")
+	DATABASE=join(dirname(realpath(__file__)), "../../location_database.sqlite3")
 ))
 
 
@@ -60,6 +65,9 @@ def log_dict(in_dict):
 	record_file.close()
 	return
 
+def jdump(in_data):
+	"""Creates prettified json representation of passed in object."""
+	return flask.json.dumps(in_data, sort_keys=True, indent=4, separators=(',', ': '))
 
 def make_json_response(in_data):
 	"""Returns a proper json response out of the data passed in."""
@@ -70,9 +78,6 @@ def make_json_response(in_data):
 	return response
 
 
-def jdump(in_data):
-	"""Creates prettified json representation of passed in object."""
-	return json.dumps(in_data, sort_keys=True, indent=4, separators=(',', ': '))
 
 class AutoDB(object):
 	"""Eases database calls by handling creation and cleanup of database"""
@@ -105,14 +110,15 @@ def main_page():
 	return flask.render_template("mainpage.html")
 
 
+@APP.route('/entry', methods=['POST'])
 @APP.route('/update', methods=['POST'])
 def update():
 	"""Logs the request to the log file, as well as adding it to he database."""
-	AutoDB().new_entry(request.form)
-	log_dict(request.form)
+	AutoDB().new_entry(flask.request.form)
+	log_dict(flask.request.form)
 	return "Success"
 
-@APP.route('/entry')
+@APP.route('/entry', methods=['GET'])
 @APP.route('/currentpos')
 def current_position():
 	"""Responds with the latest location in the database."""
@@ -145,21 +151,14 @@ def date_range(begin, end):
 	"""Returns all the location entries with timestamps between the given start
 	and end. Timestamps are in epoc format."""
 	begin, end = float(begin), float(end)
-	return AutoQuery(geo_utils.calculate_bearing).get_date_range(begin, end)
+	return AutoQuery().get_date_range(begin, end)
 
 
 @APP.route('/last_range')
 @APP.route('/last_range/<int:count>')
 def last_range(count=50):
-	return AutoQuery(geo_utils.calculate_bearing).get_last_count(count)
+	return AutoQuery().get_last_count(count)
 
 if __name__ == '__main__':
 	APP.run(host='0.0.0.0', port=8001, debug=True)
-
-
-
-
-
-
-
 

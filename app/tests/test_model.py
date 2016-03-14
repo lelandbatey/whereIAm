@@ -7,12 +7,11 @@ import unittest
 import tempfile
 import os.path
 import random
-import sys
 import os
-sys.path.append('../')
 
-import app as whereis
-from models import entry_model, time_utils
+from .. import frontend as whereis
+from ..models import entry_model, time_utils
+
 #pylint: disable=W0312
 #pylint: disable=C0330
 

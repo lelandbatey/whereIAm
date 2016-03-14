@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, division
 import math
 
 #pylint: disable=W0312
@@ -89,19 +89,34 @@ def get_speed(entry0, entry1):
 		# raise e
 	# return entries
 
-def calculate_bearing(raw_data):
-	in_place_data = [x.copy() for x in raw_data]
-	for i in range(1, len(raw_data)):
-		first, second = raw_data[i-1], raw_data[i]
-		lat1, lon1 = float(first['latitude']), float(first['longitude'])
-		lat2, lon2 = float(second['latitude']), float(second['longitude'])
-		dLon = lon2 - lon1
-		y = math.sin(dLon) * math.cos(lat2)
-		x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1)*math.cos(lat2)*math.cos(dLon)
-		bearing = math.atan2(y, x)
-		# print(bearing)
-		in_place_data[i]['derived_bearing'] = bearing
-	return in_place_data
+def calculate_bearing(json_entry_first, json_entry_second):
+	"""Returns the bearing between two chronologically consecutive entries. The
+	bearing is a `float` representing the angle from the first point to the
+	second point in radians. Each `entry` must be an object which has
+	`latitude` and `longitude` dictionary attributes."""
+	first, second = json_entry_first, json_entry_second
+	lat1, lon1 = float(first['latitude']), float(first['longitude'])
+	lat2, lon2 = float(second['latitude']), float(second['longitude'])
+	lat1, lon1 = map(math.radians, [lat1, lon1])
+	lat2, lon2 = map(math.radians, [lat2, lon2])
+	# print('lat1, lon1', lat1, lon1)
+	# print('lat2, lon2', lat2, lon2)
+	dLon = lon2 - lon1
+	# print('dLon', dLon)
+	y = math.sin(dLon) * math.cos(lat2)
+	x = math.cos(lat1) * math.sin(lat2) - math.sin(lat1)*math.cos(lat2)*math.cos(dLon)
+	bearing = math.atan2(y, x)
+	return bearing
+
+# def second_calculate_bearing(BEGIN, END)
+	# first, second = BEGIN, END
+	# lat1, lon1 = float(first['latitude']), float(first['longitude'])
+	# lat2, lon2 = float(second['latitude']), float(second['longitude'])
+	# dLon = lon2 - lon1
+
+	# y = math.sin(dLon) * math.cos(lat2)
+	# x = math.cos(lat1) * math.sin(lat2) - \
+			# math.sin(lat1) * math.cos(lat2) * math.cos(lon2 - lon1)
 
 
 
