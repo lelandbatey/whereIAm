@@ -80,10 +80,6 @@ class GeoModelUnitTests(unittest.TestCase):
 			ent = self.model.get_time(epc_time)
 			assert a_subset_b(entries[idx], ent)
 
-	def test_seed(self):
-		"""Tests that the initial database contains the seed data."""
-		assert a_subset_b(whereis.SEED_DATA, self.model.get_latest())
-
 	def test_add_single_entry(self):
 		"""Tests adding a single new entry."""
 		new_data = {
@@ -93,6 +89,26 @@ class GeoModelUnitTests(unittest.TestCase):
 		}
 		self.model.new_entry(new_data)
 		assert a_subset_b(new_data, self.model.get_latest())
+
+class ModelUnitTests(unittest.TestCase):
+	"""Tests for the entry model, without instantiating in the context of a
+	flask application."""
+
+	def setUp(self):
+		"""Create temporary database"""
+		self.db_fd, self.db_path = tempfile.mkstemp()
+		self.model = entry_model.LocationModel(self.db_path)
+
+	def tearDown(self):
+		"""Cleanup temporary database"""
+		self.model.session.close()
+		os.close(self.db_fd)
+		os.remove(self.db_path)
+
+	def test_noentries(self):
+		"""Ensure that the database returns an empty object"""
+		empty = self.model.get_latest()
+		assert empty == None
 
 if __name__ == '__main__':
 	unittest.main()

@@ -87,7 +87,7 @@ class WhereisUnitTests(unittest.TestCase):
 		assert a_subset_b(new_data, cur_pos)
 	
 	def test_add_single_entry(self):
-		"""Add a single entry, ensure that it's the only entry (aside from the seed data)."""
+		"""Add a single entry, ensure that it's the only entry."""
 		new_data = {
 			"latitude": "0.0",
 			"longitude": "0.0",
@@ -96,8 +96,8 @@ class WhereisUnitTests(unittest.TestCase):
 		self.app.post('/update', data=new_data)
 		cur_pos = self.app.get('/currentpos')
 		cur_pos = json.loads(cur_pos.data)
-		# Sqlite indexing starts with 1, so the second entry has an id of 2.
-		assert cur_pos['id'] == 2
+		# Sqlite indexing starts with 1
+		assert cur_pos['id'] == 1
 
 	def test_verify_get_ids(self):
 		"""Adds several entries, verifies they are correctly orderd."""
@@ -105,7 +105,7 @@ class WhereisUnitTests(unittest.TestCase):
 		for d in new_data:
 			self.app.post('/update', data=d)
 		for x in range(0, len(new_data)):
-			cur_ent = self.app.get('/entry/id/'+str(x+2))
+			cur_ent = self.app.get('/entry/id/'+str(x+1))
 			cur_ent = json.loads(cur_ent.data)
 			assert a_subset_b(new_data[x], cur_ent)
 
@@ -115,7 +115,7 @@ class WhereisUnitTests(unittest.TestCase):
 		for d in new_data:
 			self.app.post('/update', data=d)
 		latest = json.loads(self.app.get('/entry').data)
-		entry_array = json.loads(self.app.get('/entry/id/2/{}'.format(latest['id'])).data)
+		entry_array = json.loads(self.app.get('/entry/id/1/{}'.format(latest['id'])).data)
 		for index, _ in enumerate(entry_array):
 			assert a_subset_b(new_data[index], entry_array[index])
 

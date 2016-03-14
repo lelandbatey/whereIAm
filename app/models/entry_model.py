@@ -99,6 +99,13 @@ class LocationModel(object):
 	def new_entry(self, request, commit=True):
 		"""Stores a request into the database."""
 		entry = LocationEntry(request)
+
+		# Get and update the actual latest epoch from the database, as this
+		# object may not have ever had anything entered into it.
+		latest = self.get_latest()
+		if latest:
+			self.latest_epoch = latest['monotonic_timestamp']
+
 		if self.latest_epoch and entry.monotonic_timestamp < self.latest_epoch:
 			print("Entry was received after another entry with a later timestamp.")
 			print('Entry:{} latest:{}'.format(entry.monotonic_timestamp, self.latest_epoch))
@@ -123,7 +130,8 @@ class LocationModel(object):
 		return to_return
 
 	def get_latest(self):
-		"""Returns the latest LocationEntry which has been added to the db."""
+		"""Returns the latest LocationEntry which has been added to the db, or
+		'None' if the database is empty."""
 		entry = self.session.query(LocationEntry)\
 		            .order_by(LocationEntry.id_num.desc())\
 		            .first()

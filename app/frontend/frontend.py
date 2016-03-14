@@ -41,7 +41,6 @@ SEED_DATA = {
 def get_db():
 	"""Returns an instance of the database."""
 	database = entry_model.LocationModel(APP.config['DATABASE'])
-	database.add_if_empty(SEED_DATA)
 	return database
 
 
@@ -122,7 +121,11 @@ def update():
 @APP.route('/currentpos')
 def current_position():
 	"""Responds with the latest location in the database."""
-	return AutoQuery().get_latest()
+	latest = AutoDB().get_latest()
+	if latest:
+		return make_json_response(latest)
+	else:
+		return make_json_response(SEED_DATA)
 
 @APP.route('/allpos')
 def all_positions():
