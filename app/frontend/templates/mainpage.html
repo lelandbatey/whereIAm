@@ -199,60 +199,17 @@
 			<div id='gps-info' class="span6 offset3">
 				<h1>Information</h1>
 				<p>How up-to-date is this map? This map was updated <code id="last-updated-minutes"> </code> minutes ago.</p>
+				<p id="marker-update-countdown"></p>
 			</div>
 			<div class="span6 offset3" style="margin-bottom: 200px">
 				<h1>Why?</h1>
 				<p>I'm suspect that soon this information will be available, consciously or not. I think it'll be interesting to step in and embrace it instead of fighting it.</p>
-				<p>Nothing to hide indeed.</p>
 			</div>
 			<div class="span12"><br></div>
 		</div>
 	</body>
 
-	<script type="text/javascript">
-function createMap(inputData){
-	var myLatlong = new google.maps.LatLng (inputData.latitude, inputData.longitude);
-	
-	var mapOptions = {
-		center: myLatlong,
-		zoom: 16
-	};
-	
-	var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-
-	var marker = new google.maps.Marker({
-		animation: google.maps.Animation.DROP,
-		position: myLatlong,
-		map: map,
-		title: "Where Leland is."
-	});
-	displayAge(inputData);
-};
-
-function displayAge(inputData){
-	// Get current time in seconds as epoch
-	var now = (new Date()).getTime() / 1000;
-	var timeDiff = now - inputData.monotonic_timestamp;
-	var minuteDiff = timeDiff / 60.0;
-	var updateDiv = $('#last-updated-minutes');
-
-	updateDiv.text(minuteDiff.toFixed(2));
-};
-
-
-
-function initialize() {
-	$.ajax({
-		url: '/currentpos',
-		dataType: 'json',
-		success: createMap
-	});
-};
-
-
-google.maps.event.addDomListener(window, 'load', initialize);
-
-
+	<script type="text/javascript" src="/static/main.js">
 	</script>
 
 </html>
