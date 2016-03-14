@@ -7,6 +7,7 @@ from __future__ import print_function
 from os.path import dirname, realpath, join
 
 import flask
+import requests
 
 from ..models import geo_utils, entry_model
 
@@ -161,6 +162,28 @@ def date_range(begin, end):
 @APP.route('/last_range/<int:count>')
 def last_range(count=50):
 	return AutoQuery().get_last_count(count)
+
+@APP.route('/time_to_place/<path:location>')
+def time_to_place(location):
+	if not location:
+		return ""
+	latest = AutoDB().get_latest()
+	lat, lng = latest['latitude'], latest['longitude']
+
+	# Construct the query parameter
+	apikey = 'AIzaSyD3CgE-0aPdTDT_Ts4pud_9_1ZCykAF5IE'
+
+	query_path = 'https://maps.googleapis.com/maps/api/distancematrix/json'
+	params_template = '?origins={},{}&destinations={}&mode=driving&key={}'
+
+	query_url = "{}{}".format(query_path, params_template.format(lat, lng, location, apikey))
+
+	# Get the distance matrix data from Google
+	req = requests.get(query_url)
+	data = req.json()
+	return make_json_response(data)
+
+
 
 if __name__ == '__main__':
 	APP.run(host='0.0.0.0', port=8001, debug=True)

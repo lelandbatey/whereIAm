@@ -1,4 +1,5 @@
 
+var DEST_ADDRESS = "";
 
 var MAP_MARKER;
 
@@ -45,6 +46,31 @@ function displayAge(inputData){
     updateDiv.text(minuteDiff.toFixed(2));
 };
 
+function updateTravelInfo(){
+    // Get the new travel distance info and update the div containing the
+    // time-to-place information.
+    if (!DEST_ADDRESS) {
+        return;
+    }
+    var distElem = $('#dist-display');
+
+    // If the distance element doesn't exist, create it.
+    if (distElem.length == 0) {
+        distElem = $('<p id="dist-display"/>');
+        $('#dest-query-button').after(distElem);
+    }
+    $.ajax({
+        url: '/time_to_place/'+DEST_ADDRESS,
+        dataType: 'json',
+        success: function(data) {
+            console.log('Updating travel info', DEST_ADDRESS);
+            var travel_time = data['rows'][0]['elements'][0]["duration"]["text"];
+            distElem.text('It will be '+travel_time+' minutes to '+DEST_ADDRESS+'.');
+        }
+    })
+}
+
+
 
 function updateMarker(){
     // Updates the marker with the most recent location from the device
@@ -61,11 +87,11 @@ function updateMarker(){
 
 function startTimer(){
     countdown(60, function(curTime){
-        console.log("Updating the countdown:", curTime);
         $('#marker-update-countdown').text('Map will update in: '+String(curTime));
     }, function(){
         updateMarker();
         startTimer();
+        updateTravelInfo();
     });
 }
 
@@ -77,6 +103,10 @@ function initialize() {
         success: createMap
     });
     startTimer();
+    $('#dest-query-button').bind('click', function(){
+        DEST_ADDRESS = $('#dest-address').val();
+        updateTravelInfo();
+    });
 };
 
 
