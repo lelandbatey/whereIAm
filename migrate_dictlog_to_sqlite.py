@@ -1,5 +1,5 @@
 from __future__ import print_function
-from models import entry_model
+from app.models import entry_model
 import datetime
 import json
 #pylint: disable=W0312
