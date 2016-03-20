@@ -65,6 +65,7 @@ function updateTravelInfo(){
         success: function(data) {
             console.log('Updating travel info', DEST_ADDRESS);
             var travel_time = data['rows'][0]['elements'][0]["duration"]["text"];
+            travel_time = travel_time.split(' ')[0];
             distElem.text('It will be '+travel_time+' minutes to '+DEST_ADDRESS+'.');
         }
     })
