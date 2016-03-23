@@ -49,9 +49,10 @@ class SegmentSeries(object):
 		self.ids = [ent['id'] for ent in self.entries[1:]]
 
 	def _init_segments(self):
+		"""Initialize segments. Once the entries have been set, go through
+		self.entries[1:] and create Segments from each entry pair."""
 		self.segments = []
 		for index in range(1, len(self.entries)):
-			#print(self.entries[index])
 			seg = Segment([self.entries[index-1], self.entries[index]], self.model)
 			self.segments.append(seg)
 
@@ -115,6 +116,8 @@ class SegmentSeries(object):
 
 
 	def get_filtered_speeds(self, winlen=3):
+		"""Returns a list of self.speeds passed through a median filter of size
+		`winlen`."""
 		medians = geo_utils.median_filter(self.speeds, winlen)
 		assert len(medians) == len(self.ids), "medians count: {}, ids count: {}".format(len(medians), len(self.ids))
 		return medians

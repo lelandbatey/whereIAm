@@ -6,95 +6,102 @@ image.
 """
 
 from __future__ import print_function
+from itertools import izip
+import math
 import sys
-sys.path.append('../')
 
-from models import Bunch, Segment, SegmentSeries, geo_utils, time_utils
 import matplotlib.pyplot as plt
-import app as whereis
+
+sys.path.append('../')
+from app.models import geo_utils, time_utils
+import app.frontend as whereis
 
 
 #pylint: disable=W0312
 
 
-def xget(coord): return coord[0]
-def yget(coord): return coord[0]
 def min_max(coords, getter, margin=100):
-	return min(coords, key=getter)-margin, max(coords, key=getter)+margin
+    return min(coords, key=getter)-margin, max(coords, key=getter)+margin
 
 def increment_epoch_by_day(ts, count=1):
-	"""Adds the number of seconds in a day.
-	Useful for incrementing a given epoch timestamp by one day."""
-	return ts + (count * 86400)
+    """Adds the number of seconds in a day.
+    Useful for incrementing a given epoch timestamp by one day."""
+    return ts + (count * 86400)
 
 def main():
 
-	init_time = Bunch(\
-	                  start="08:59:00 02-07-15",
-	                  end="19:00:00 02-07-15"
-	                 )
-	init_time.set_in_place(time_utils.simplefmt_in_pdt_to_utc_epoch)
+    start_time = "08:59:00 02-07-15"
+    stop_time = "19:00:00 02-07-15"
 
-	entries = []
-	begin = increment_epoch_by_day(init_time.start, 0)
-	end = increment_epoch_by_day(init_time.end, 3)
-	print('begin_UTC_Epoch:', begin)
-	print('end_UTC_Epoch:', end)
+    start_time = time_utils.simplefmt_in_pdt_to_utc_epoch(start_time)
+    stop_time = time_utils.simplefmt_in_pdt_to_utc_epoch(stop_time)
 
-	entries += whereis.AutoDB().get_date_range(begin, end)
-	print('Retrieved entries from database')
 
-	# entries = geo_utils.calculate_bearing(entries)
-	print('Calculated bearing for all data')
-	series = []
+    entries = []
+    begin = increment_epoch_by_day(start_time, 0)
+    end = increment_epoch_by_day(stop_time, 3)
+    print('begin_UTC_Epoch:', begin)
+    print('end_UTC_Epoch:', end)
 
-	for index in range(1, len(entries)):
-	# for entry in entries:
-		# When passed only an entry id, a Segment looks up the previous id and
-		# uses that for it's starting entry. So if you pass an `id` for
-		# `Entry_n`, it looks up `Entry_n-1` and uses that as it's starting
-		# entry. The xy for the Segment is then calculated as xy for `Entry_n`
-		# assuming `Entry_n-1` is the origin.
-		#
-		# Note also that this example runs extremely slowly since AutoDB
-		# automatically creates and closes the database connection for every
-		# query. So each segment means a new disk read.
-		seg = Segment([entries[index-1], entries[index]], whereis.AutoDB())
-		series.append(seg)
-	print('Created segments')
+    entries += whereis.AutoDB().get_date_range(begin, end)
+    print('Retrieved entries from database')
 
-	# Assembling all the xy coordinates via dead-reckoning
-	coords = [[0, 0]]
-	for i in range(len(series)):
-		x = series[i].x
-		y = series[i].y
-		coords.append([x+coords[i][0], y+coords[i][1]])
-	# coords = series.xy_coords
-	print('Created xy coords')
+    # Calculate the bearing for each "segment" (a segment represents the line
+    # between two coordinates)
+    seg_bearings = []
+    for idx in range(1, len(entries)):
+        bearing = geo_utils.calculate_bearing(entries[idx-1], entries[idx])
+        seg_bearings.append(bearing)
+    print('Calculated bearing for each segment')
 
-	ylist, xlist = zip(*coords)
-	xlist = [-n for n in xlist]
+    # Calculate the length of each segment
+    seg_lengths = []
+    for idx in range(1, len(entries)):
+        ent0, ent1 = entries[idx-1], entries[idx]
+        linear_length = geo_utils.distance_on_unit_sphere(ent0['latitude'], ent0['longitude'], ent1['latitude'], ent1['longitude'])
+        linear_length = linear_length * 6378100
+        seg_lengths.append(linear_length)
+    print('Calculated length of each segment')
 
-	fig, ax = plt.subplots()
+    # The length of calculated attributes of segments should be the same, and
+    # both should equal the the number of segments derivable from the list of
+    # entries, which would be length(entries) - 1
+    assert len(seg_bearings) == len(seg_lengths) == (len(entries) - 1)
 
-	ax.plot(xlist, ylist,
-	        marker='o',
-	        markersize=0.25,
-	        markeredgewidth=0.05,
-	        linewidth=0.1,
-	       )
-	ax.set_aspect('equal')
-	ax.set_xlim(*min_max(xlist, lambda x: x))
-	ax.set_ylim(*min_max(ylist, lambda y: y))
+    # Extrapolate x/y coords from length and bearing of each segment in a
+    # process called "dead reckoning"
+    coords = [[0, 0]]
+    for bearing, length in izip(seg_bearings, seg_lengths):
+        x = length * math.cos(bearing)
+        y = length * math.sin(bearing)
+        priorx, priory = coords[-1]
+        coords.append([x+priorx, y+priory])
+    print("Extrapolated x/y coordinates from calculated segment data.")
 
-	# Uncomment the below lines to hide the axis labels
-	# ax.set_yticklabels([])
-	# ax.set_xticklabels([])
-	# ax.get_xaxis().set_ticks([])
-	# ax.get_yaxis().set_ticks([])
 
-	print('Writing image')
-	fig.savefig('example00__dead_reckoning.png', bbox_inches='tight', dpi=2000)
+    ylist, xlist = zip(*coords)
+    # xlist = [-n for n in xlist]
+
+    fig, ax = plt.subplots()
+
+    ax.plot(xlist, ylist,
+            marker='o',
+            markersize=0.25,
+            markeredgewidth=0.05,
+            linewidth=0.1,
+           )
+    ax.set_aspect('equal')
+    ax.set_xlim(*min_max(xlist, lambda x: x))
+    ax.set_ylim(*min_max(ylist, lambda y: y))
+
+    # Uncomment the below lines to hide the axis labels
+    # ax.set_yticklabels([])
+    # ax.set_xticklabels([])
+    # ax.get_xaxis().set_ticks([])
+    # ax.get_yaxis().set_ticks([])
+
+    print('Writing image')
+    fig.savefig('example00__dead_reckoning.png', bbox_inches='tight', dpi=2000)
 
 if __name__ == '__main__':
-	main()
+    main()
