@@ -4,13 +4,16 @@ that are beyond a certain threshold of speed.
 """
 
 from __future__ import print_function
+import datetime as dt
+from itertools import chain
 import sys
 
 sys.path.append('../')
 
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
-from app.models import SegmentSeries, time_utils, geo_utils
+from app.models import time_utils, geo_utils
 import app.frontend as whereis
 
 #pylint: disable=W0312
@@ -37,6 +40,10 @@ class Segment(object):
 
         self.speed = geo_utils.get_speed(self.first, self.last)
 
+        ts0 = self.first['monotonic_timestamp']
+        ts1 = self.last['monotonic_timestamp']
+        self.mean_timestamp = (ts0 + ts1) / 2.0
+
 
 def main():
     start_time = "09:00:00 03-07-15"
@@ -44,22 +51,64 @@ def main():
 
     start_time = time_utils.simplefmt_in_pdt_to_utc_epoch(start_time)
     stop_time = time_utils.simplefmt_in_pdt_to_utc_epoch(stop_time)
+    print('begin_UTC_Epoch:', start_time)
+    print('end_UTC_Epoch:', stop_time)
 
-    series = SegmentSeries(whereis.AutoDB(), start_time=init_time.start, stop_time=init_time.end)
-    moving_ids = series.get_moving_ids()
+    # Gather entries from database, transform into segments
+    entries = whereis.AutoDB().get_date_range(start_time, stop_time)
+    segments = []
+    for idx in range(1, len(entries)):
+        tmp_seg = Segment(entries[idx-1], entries[idx])
+        segments.append(tmp_seg)
+    # Make sure that the correct number of segments have been created for the
+    # amount of entries
+    assert len(segments) == (len(entries) - 1)
+    print("Created '{}' segments from entries".format(len(segments)))
+
+    speeds = [s.speed for s in segments]
+    filt_speeds = geo_utils.median_filter(speeds, winlen=5)
+    # Ensure that we have a correct number of filtered speed values
+    assert len(filt_speeds) == len(segments)
+
+    # Find all the segments that are "moving", defined as having a speed above
+    # 1 meter per second. Instead of using the raw speeds, check against the
+    # filtered speeds. Additionally, a segment can only count as "moving" if it
+    # is part of a series of at least 3 segments that satisfy all other
+    # criteria for "moving".
+    moving_segs = []
+    tmp_moving_segs = []
+    for idx, speed in enumerate(filt_speeds):
+        if speed >= 1.0 and speed <= 1000:
+            tmp_moving_segs.append(segments[idx])
+        elif len(tmp_moving_segs) < 3:
+            del tmp_moving_segs
+            tmp_moving_segs = []
+        elif len(tmp_moving_segs) > 2:
+            moving_segs.append(tmp_moving_segs)
+            del tmp_moving_segs
+            tmp_moving_segs = []
+    print("Found all '{}' segments which represent movement".format(len(moving_segs)))
+
+    to_dt = dt.datetime.fromtimestamp
+    series_ts = [to_dt(s.mean_timestamp) for s in segments]
+    moving_ts = [to_dt(s.mean_timestamp) for s in chain.from_iterable(moving_segs)]
+
+    print("Time difference of series: {} - {} = {}".format(max(series_ts), min(series_ts), max(series_ts) - min(series_ts)))
 
     fig, ax = plt.subplots()
 
-    ax.plot(series.ids, series.speeds, color='blue')
-    ax.plot(series.ids, series.get_filtered_speeds(5), color='green')
-    ax.plot(moving_ids, [0 for _ in moving_ids], 'o', color='yellow')
+    ax.plot(series_ts, speeds, color='blue')
+    ax.plot(series_ts, filt_speeds, color='green')
+    ax.plot(moving_ts, [0 for _ in moving_ts], 'o', color='yellow')
 
-    ax.set_aspect('equal')
-    ax.set_xlim(min(series.ids)-5, max(series.ids)+5)
-    ax.set_ylim(min(series.speeds)-10, max(series.speeds)+10)
+    ax.set_ylim(min(speeds)-2, 50)
+
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=1))
+    date_formatter = mdates.DateFormatter("%m-%d %H:%M")
+    ax.xaxis.set_major_formatter(date_formatter)
 
     print("Writing image")
-    fig.set_size_inches(240, 28.5866)
+    fig.set_size_inches(240, 14)
     fig.savefig('example02__speed_threshold.png',
                 bbox_inches='tight',
                 dpi=100

@@ -9,12 +9,9 @@ sys.path.append('../')
 
 import matplotlib.pyplot as plt
 
-from app.models import SegmentSeries, time_utils
+from app.models import time_utils
 from app.models.kalman_filter import KalmanFilter, Coordinate
 import app.frontend as whereis
-
-
-#pylint: disable=W0312
 
 
 def increment_epoch_by_day(ts, count=1):
@@ -23,6 +20,7 @@ def increment_epoch_by_day(ts, count=1):
     return ts + (count * 86400)
 
 def main():
+    """Graphing Kalman Filter data."""
 
     start_time = "09:00:00 03-07-15"
     stop_time = "19:00:00 03-07-15"

@@ -52,12 +52,15 @@ def get_speed(entry0, entry1):
 	"""Given two 'LocationEntry' objects, returns speed traveled between the
 	two them. Return value is in form of meters per second."""
 
-	arc_distance = distance_on_unit_sphere(entry0.latitude, entry0.longitude, entry1.latitude, entry1.longitude)
+	arc_distance = distance_on_unit_sphere(
+			entry0['latitude'], entry0['longitude'],
+			entry1['latitude'], entry1['longitude']
+			)
 	# Multiplying the arc distance by the radius of the earth in meters. Gets
 	# us the distance in meters.
 	distance = arc_distance * 6378100
 	distance = round(distance, 4)
-	time = entry1.monotonic_timestamp - entry0.monotonic_timestamp
+	time = entry1['monotonic_timestamp'] - entry0['monotonic_timestamp']
 	if distance == 0.0:
 		return 0.0
 	speed = distance / time
@@ -65,8 +68,8 @@ def get_speed(entry0, entry1):
 		print('distance:', distance)
 		print('speed:', speed)
 		print('time:', time)
-		print('ts0:', entry0.monotonic_timestamp)
-		print('ts1:', entry1.monotonic_timestamp)
+		print('ts0:', entry0['monotonic_timestamp'])
+		print('ts1:', entry1['monotonic_timestamp'])
 		raise ValueError("Speed is somehow less than zero")
 	return distance / time
 

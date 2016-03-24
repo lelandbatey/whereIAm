@@ -17,10 +17,9 @@ from app.models import geo_utils, time_utils
 import app.frontend as whereis
 
 
-#pylint: disable=W0312
-
-
 def min_max(coords, getter, margin=100):
+    """Utility function for getting minimum and maximum graph width values from
+    data for use in matplotlib"""
     return min(coords, key=getter)-margin, max(coords, key=getter)+margin
 
 def increment_epoch_by_day(ts, count=1):
@@ -29,6 +28,7 @@ def increment_epoch_by_day(ts, count=1):
     return ts + (count * 86400)
 
 def main():
+    """Graphing via dead-reckoning"""
 
     start_time = "08:59:00 02-07-15"
     stop_time = "19:00:00 02-07-15"
@@ -58,7 +58,10 @@ def main():
     seg_lengths = []
     for idx in range(1, len(entries)):
         ent0, ent1 = entries[idx-1], entries[idx]
-        linear_length = geo_utils.distance_on_unit_sphere(ent0['latitude'], ent0['longitude'], ent1['latitude'], ent1['longitude'])
+        linear_length = geo_utils.distance_on_unit_sphere(
+                ent0['latitude'], ent0['longitude'],
+                ent1['latitude'], ent1['longitude']
+                )
         linear_length = linear_length * 6378100
         seg_lengths.append(linear_length)
     print('Calculated length of each segment')

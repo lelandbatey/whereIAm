@@ -117,7 +117,9 @@ class LocationModel(object):
 
 	def get_date_range(self, begin_date, end_date):
 		"""Gets all entries that exist between the begin and end dates.
-		Accepts either datetime objects or numbers representing a date."""
+		Accepts either datetime objects or numbers representing a date.
+		Returns a list of the JSON representation of each entry, sorted by
+		monotonic_timestamp from oldest to youngest."""
 		if isinstance(begin_date, datetime.datetime):
 			begin_date = datetime_to_epoch(begin_date)
 			end_date = datetime_to_epoch(end_date)
