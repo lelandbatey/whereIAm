@@ -1,5 +1,6 @@
 from __future__ import print_function
-import geo_utils
+# import geo_utils
+from .. import geo_utils
 from segment import Segment
 
 class CoordinateCollection(object):

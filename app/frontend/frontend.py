@@ -9,7 +9,8 @@ from os.path import dirname, realpath, join
 import flask
 import requests
 
-from ..models import geo_utils, entry_model
+from ..models import entry_model
+from .. import geo_utils
 
 #pylint: disable=W0312
 #pylint: disable=C0330

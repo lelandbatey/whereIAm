@@ -10,7 +10,8 @@ import random
 import os
 
 from .. import frontend as whereis
-from ..models import entry_model, time_utils
+from .. import time_utils
+from ..models import entry_model
 
 #pylint: disable=W0312
 #pylint: disable=C0330

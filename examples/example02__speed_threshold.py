@@ -13,36 +13,10 @@ sys.path.append('../')
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
-from app.models import time_utils, geo_utils
+from app.models import time_utils
+from app import geo_utils
 import app.frontend as whereis
 
-#pylint: disable=W0312
-
-
-class Segment(object):
-    """Represents data about the line-segment between two GPS coordinates."""
-    def __init__(self, first_entry, last_entry):
-        """Initialize the coordinates which define this Segment, as well as
-        this Segments `bearing` (in radians from North), `linear_length` (in
-        meters), and `speed` (in meters per second)."""
-        self.first = first_entry
-        self.last = last_entry
-
-        self.bearing = geo_utils.calculate_bearing(self.first, self.last)
-
-        arc_distance = geo_utils.distance_on_unit_sphere(
-                self.first['latitude'], self.first['longitude'],
-                self.last['latitude'], self.last['latitude']
-                )
-        # Multiply the arc-length by the radius of the earth in meters to get
-        # the length in meters
-        self.linear_length = arc_distance * 6378100
-
-        self.speed = geo_utils.get_speed(self.first, self.last)
-
-        ts0 = self.first['monotonic_timestamp']
-        ts1 = self.last['monotonic_timestamp']
-        self.mean_timestamp = (ts0 + ts1) / 2.0
 
 
 def main():
@@ -58,7 +32,7 @@ def main():
     entries = whereis.AutoDB().get_date_range(start_time, stop_time)
     segments = []
     for idx in range(1, len(entries)):
-        tmp_seg = Segment(entries[idx-1], entries[idx])
+        tmp_seg = geo_utils.Segment(entries[idx-1], entries[idx])
         segments.append(tmp_seg)
     # Make sure that the correct number of segments have been created for the
     # amount of entries

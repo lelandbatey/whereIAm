@@ -1,9 +1,9 @@
 from __future__ import print_function
-import entry_model
-import geo_utils
 import numbers
 import math
 
+from .. import geo_utils
+import entry_model
 from . import Bunch
 
 

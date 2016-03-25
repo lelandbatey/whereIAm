@@ -4,3 +4,5 @@ from geo_utils import mean, calculate_bearing, distance_on_unit_sphere, get_spee
                       format_xy_matplotlib
 from median_filter import median_filter, get_candidates
 
+from segment import Segment
+
