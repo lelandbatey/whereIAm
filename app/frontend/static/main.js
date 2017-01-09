@@ -2,6 +2,7 @@
 var DEST_ADDRESS = "";
 
 var MAP_MARKER;
+var HAS_DRAGGED = false;
 
 window.continue_countdown = true;
 function countdown(val, stepfunc, afterfunc){
@@ -33,6 +34,7 @@ function createMap(inputData){
         map: map,
         title: "Where Leland is."
     });
+    google.maps.event.addListener(map, 'dragend', function(){HAS_DRAGGED = true;});
     displayAge(inputData);
 };
 
@@ -71,6 +73,38 @@ function updateTravelInfo(){
     })
 }
 
+function drawHistory() {
+    var time_difference = 600;
+    $.ajax({
+        url: '/currentpos',
+        dataType: 'json',
+        success: function(data) {
+            var latest_time = parseInt(data['monotonic_timestamp'], 10);
+            var start_range = latest_time - time_difference;
+            $.ajax({
+                url: '/data_range/'+start_range+'/'+latest_time,
+                dataType: 'json',
+                success: function(entries) {
+                    var coords = [];
+                    for (var i = 0; i < entries.length; i++) {
+                        var entry = entries[i];
+                        var latLng = new google.maps.LatLng(entry.latitude, entry.longitude);
+                        coords.push(latLng);
+                    }
+                    console.log(coords);
+                    var travelPath = new google.maps.Polyline({
+                        path: coords,
+                        geodesic: true,
+                        strokeColor: '#FF0000',
+                        strokeOpacity: 1.0,
+                        strokeWeight: 2
+                    });
+                    travelPath.setMap(MAP_MARKER.map);
+                }
+            });
+        }
+    });
+}
 
 
 function updateMarker(){
@@ -81,7 +115,9 @@ function updateMarker(){
         success: function(data) {
             var latLng = new google.maps.LatLng(data.latitude, data.longitude);
             MAP_MARKER.setPosition(latLng);
-            MAP_MARKER.map.panTo(latLng);
+            if (!HAS_DRAGGED) {
+                MAP_MARKER.map.panTo(latLng);
+            }
             displayAge(data);
         }
     });
@@ -105,6 +141,7 @@ function initialize() {
         dataType: 'json',
         success: createMap
     });
+    drawHistory();
     startTimer();
     $('#dest-query-button').bind('click', function(){
         DEST_ADDRESS = $('#dest-address').val();
