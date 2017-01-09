@@ -74,7 +74,7 @@ function updateTravelInfo(){
 }
 
 function drawHistory() {
-    var time_difference = 600;
+    var time_difference = 6000;
     $.ajax({
         url: '/currentpos',
         dataType: 'json',
