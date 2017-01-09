@@ -81,13 +81,15 @@ function updateMarker(){
         success: function(data) {
             var latLng = new google.maps.LatLng(data.latitude, data.longitude);
             MAP_MARKER.setPosition(latLng);
+            MAP_MARKER.map.panTo(latLng);
             displayAge(data);
         }
     });
 }
 
 function startTimer(){
-    countdown(60, function(curTime){
+    //countdown(60, function(curTime){
+    countdown(10, function(curTime){
         $('#marker-update-countdown').text('Map will update in: '+String(curTime));
     }, function(){
         updateMarker();
