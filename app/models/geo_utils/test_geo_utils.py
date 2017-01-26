@@ -64,7 +64,6 @@ class TestCalculateBearing(unittest.TestCase):
         end = self.west
 
         result = geo_utils.calculate_bearing(self.east, self.west)
-        print(math.degrees(result))
         self.assertEqual(result, (-math.pi)/2)
 
 

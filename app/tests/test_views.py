@@ -53,7 +53,7 @@ def create_test_entries(count=1):
 
 class WhereisUnitTests(unittest.TestCase):
 	"""Tests the update endpoint of app."""
-	
+
 	def setUp(self):
 		"""Initialization of this group of tests."""
 		self.db_fd, whereis.APP.config['DATABASE'] = tempfile.mkstemp()
@@ -63,7 +63,7 @@ class WhereisUnitTests(unittest.TestCase):
 		self.app = whereis.APP.test_client()
 		# This has the side effect of creating our database if it doesn't already exist.
 		self.model = whereis.get_db()
-	
+
 	def tearDown(self):
 		"""Cleanup for these unit tests."""
 		self.model.session.close()
@@ -74,18 +74,18 @@ class WhereisUnitTests(unittest.TestCase):
 
 	def test_empty_db(self):
 		"""With a fresh and empty database, ensure that the seed data is still present."""
-		cur_pos = self.app.get('/currentpos')
+		cur_pos = self.app.get('/api/v1/currentpos')
 		cur_pos = json.loads(cur_pos.data)
 		assert a_subset_b(whereis.SEED_DATA, cur_pos)
 
 	def test_add_entry(self):
 		"""Add new data to the database, then verify that it's correctly entered."""
 		new_data = create_test_entries()
-		self.app.post('/update', data=new_data)
-		cur_pos = self.app.get('/currentpos')
+		self.app.post('/api/v1/update', data=new_data)
+		cur_pos = self.app.get('/api/v1/currentpos')
 		cur_pos = json.loads(cur_pos.data)
 		assert a_subset_b(new_data, cur_pos)
-	
+
 	def test_add_single_entry(self):
 		"""Add a single entry, ensure that it's the only entry."""
 		new_data = {
@@ -93,8 +93,8 @@ class WhereisUnitTests(unittest.TestCase):
 			"longitude": "0.0",
 			"time": "2010-01-01T12:00:00.00Z"
 		}
-		self.app.post('/update', data=new_data)
-		cur_pos = self.app.get('/currentpos')
+		self.app.post('/api/v1/update', data=new_data)
+		cur_pos = self.app.get('/api/v1/currentpos')
 		cur_pos = json.loads(cur_pos.data)
 		# Sqlite indexing starts with 1
 		assert cur_pos['id'] == 1
@@ -103,9 +103,9 @@ class WhereisUnitTests(unittest.TestCase):
 		"""Adds several entries, verifies they are correctly orderd."""
 		new_data = create_test_entries(10)
 		for d in new_data:
-			self.app.post('/update', data=d)
+			self.app.post('/api/v1/update', data=d)
 		for x in range(0, len(new_data)):
-			cur_ent = self.app.get('/entry/id/'+str(x+1))
+			cur_ent = self.app.get('/api/v1/entry/id/'+str(x+1))
 			cur_ent = json.loads(cur_ent.data)
 			assert a_subset_b(new_data[x], cur_ent)
 
@@ -113,9 +113,9 @@ class WhereisUnitTests(unittest.TestCase):
 		"""Add then get several entries in order."""
 		new_data = create_test_entries(15)
 		for d in new_data:
-			self.app.post('/update', data=d)
-		latest = json.loads(self.app.get('/entry').data)
-		entry_array = json.loads(self.app.get('/entry/id/1/{}'.format(latest['id'])).data)
+			self.app.post('/api/v1/update', data=d)
+		latest = json.loads(self.app.get('/api/v1/entry').data)
+		entry_array = json.loads(self.app.get('/api/v1/entry/id/1/{}'.format(latest['id'])).data)
 		for index, _ in enumerate(entry_array):
 			assert a_subset_b(new_data[index], entry_array[index])
 
@@ -131,10 +131,10 @@ class WhereisUnitTests(unittest.TestCase):
 			"longitude": "0.0",
 			"time": "2010-01-01T12:01:45.00Z"
 		}
-		self.app.post('/update', data=one)
-		self.app.post('/update', data=two)
+		self.app.post('/api/v1/update', data=one)
+		self.app.post('/api/v1/update', data=two)
 		epoch = int(datetime_to_epoch(from_oddformat(one['time']))) 
-		t = '/entry/time/{}'.format(epoch + 30)
+		t = '/api/v1/entry/time/{}'.format(epoch + 30)
 		entry = self.app.get(t)
 		assert a_subset_b(two, json.loads(entry.data))
 
@@ -142,23 +142,19 @@ class WhereisUnitTests(unittest.TestCase):
 		"""Check that querying by time range returns entries within bounds."""
 		new_data = create_test_entries(15)
 		for d in new_data:
-			self.app.post('/update', data=d)
+			self.app.post('/api/v1/update', data=d)
 		def get_epoch(val): return int(datetime_to_epoch(from_oddformat(val['time'])))
 		first, last = new_data[0], new_data[-1]
 		first, last = get_epoch(first), get_epoch(last)
 		first += 1
 		last -= 1
-		query_str = '/entry/time/{}/{}'.format(first, last)
+		query_str = '/api/v1/entry/time/{}/{}'.format(first, last)
 		entries = json.loads(self.app.get(query_str).data)
 		good_range = new_data[1:-1]
 
 		assert len(entries) == len(good_range)
 		for index, _ in enumerate(good_range):
 			assert a_subset_b(good_range[index], entries[index])
-
-
-
-
 
 
 if __name__ == '__main__':
