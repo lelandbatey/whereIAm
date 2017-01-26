@@ -20,15 +20,20 @@ class TestCalculateBearing(unittest.TestCase):
     """Unit tests for the `calculate_bearing` function."""
     def setUp(self):
         """Generate some lat/lon coordinates."""
+        import mpmath as mp
         self.first = {"latitude" : 46.0,
                       "longitude": -120.0}
         self.second = {"latitude" : 45.995,
                        "longitude": -120.0}
 
+        # self.east = {"latitude" : mp.mpf(46.0),
+                     # "longitude": mp.mpf(-120.0)}
+        # self.west = {"latitude" : mp.mpf(46.0),
+                     # "longitude": mp.mpf(-120.0001)}
         self.east = {"latitude" : 46.0,
-                     "longitude": -120.000}
+                     "longitude": -120.0}
         self.west = {"latitude" : 46.0,
-                     "longitude": -121.0000}
+                     "longitude": -121.0}
 
     def test_input_attributes(self):
         """Check that odd objects with only `latitude` and `longitude`
@@ -65,7 +70,7 @@ class TestCalculateBearing(unittest.TestCase):
 
         result = geo_utils.calculate_bearing(self.east, self.west)
         print(math.degrees(result))
-        self.assertEqual(result, (-math.pi)/2)
+        self.assertEqual(result, (-math.pi)/2.0)
 
 
 

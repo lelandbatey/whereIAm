@@ -92,7 +92,7 @@ def get_speed(entry0, entry1):
 		# raise e
 	# return entries
 
-def calculate_bearing(json_entry_first, json_entry_second):
+def calculate_bearing_other(json_entry_first, json_entry_second):
 	"""Returns the bearing between two chronologically consecutive entries. The
 	bearing is a `float` representing the angle from the first point to the
 	second point in radians. Each `entry` must be an object which has
@@ -111,15 +111,20 @@ def calculate_bearing(json_entry_first, json_entry_second):
 	bearing = math.atan2(y, x)
 	return bearing
 
-# def second_calculate_bearing(BEGIN, END)
-	# first, second = BEGIN, END
-	# lat1, lon1 = float(first['latitude']), float(first['longitude'])
-	# lat2, lon2 = float(second['latitude']), float(second['longitude'])
-	# dLon = lon2 - lon1
+def calculate_bearing(first, second):
+	import mpmath as mp
+	mp.dps = 20
+	lat1, lon1 = mp.mpf(first['latitude']), mp.mpf(first['longitude'])
+	lat2, lon2 = mp.mpf(second['latitude']), mp.mpf(second['longitude'])
 
-	# y = math.sin(dLon) * math.cos(lat2)
-	# x = math.cos(lat1) * math.sin(lat2) - \
-			# math.sin(lat1) * math.cos(lat2) * math.cos(lon2 - lon1)
+	lat1, lon1 = map(mp.radians, [lat1, lon1])
+	lat2, lon2 = map(mp.radians, [lat2, lon2])
+
+	dLon = lon2 - lon1
+	y = mp.sin(dLon) * mp.cos(lat2)
+	x = mp.cos(lat1) * mp.sin(lat2) - mp.sin(lat1)*mp.cos(lat2)*mp.cos(dLon)
+	bearing = mp.atan2(y, x)
+	return bearing
 
 
 
