@@ -5,6 +5,12 @@ var MAP_MARKER;
 var HAS_DRAGGED = false;
 
 window.continue_countdown = true;
+/*
+ * Create a "countdown", taking a starting value, a function to call on each
+ * decrement of that value, and a function to be called once that value is
+ * zero. The value is decremented and this function recurses every 1000
+ * milliseconds, until the value is zero.
+ */
 function countdown(val, stepfunc, afterfunc){
     if (!window.continue_countdown){
         return;
@@ -17,15 +23,19 @@ function countdown(val, stepfunc, afterfunc){
     }
 }
 
-
+/*
+ * Create an instance of a Google map and populate it with the provided
+ * `inputData`. Additionally, update the div displaying the age of the latest
+ * datapoint/current marker.
+ */
 function createMap(inputData){
     var myLatlong = new google.maps.LatLng (inputData.latitude, inputData.longitude);
-    
+
     var mapOptions = {
         center: myLatlong,
         zoom: 16
     };
-    
+
     var map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
 
     MAP_MARKER = new google.maps.Marker({
@@ -38,6 +48,9 @@ function createMap(inputData){
     displayAge(inputData);
 };
 
+/*
+ * Update the display of the age of the latest data, in minutes.
+ */
 function displayAge(inputData){
     // Get current time in seconds as epoch
     var now = (new Date()).getTime() / 1000;
@@ -48,9 +61,11 @@ function displayAge(inputData){
     updateDiv.text(minuteDiff.toFixed(2));
 };
 
+/*
+ * Get the new travel distance info and update the div containing the
+ * time-to-place information.
+ */
 function updateTravelInfo(){
-    // Get the new travel distance info and update the div containing the
-    // time-to-place information.
     if (!DEST_ADDRESS) {
         return;
     }
@@ -62,13 +77,12 @@ function updateTravelInfo(){
         $('#dest-query-button').after(distElem);
     }
     $.ajax({
-        url: '/time_to_place/'+DEST_ADDRESS,
+        url: '/api/v1/time_to_place/'+DEST_ADDRESS,
         dataType: 'json',
         success: function(data) {
             console.log('Updating travel info', DEST_ADDRESS);
             var travel_time = data['rows'][0]['elements'][0]["duration"]["text"];
-            travel_time = travel_time.split(' ')[0];
-            distElem.text('It will be '+travel_time+' minutes to '+DEST_ADDRESS+'.');
+            distElem.text('It will be '+travel_time+' to '+DEST_ADDRESS+'.');
         }
     })
 }
@@ -76,13 +90,13 @@ function updateTravelInfo(){
 function drawHistory() {
     var time_difference = 36000;
     $.ajax({
-        url: '/currentpos',
+        url: '/api/v1/currentpos',
         dataType: 'json',
         success: function(data) {
             var latest_time = parseInt(data['monotonic_timestamp'], 10);
             var start_range = latest_time - time_difference;
             $.ajax({
-                url: '/data_range/'+start_range+'/'+latest_time,
+                url: '/api/v1/data_range/'+start_range+'/'+latest_time,
                 dataType: 'json',
                 success: function(entries) {
                     var coords = [];
@@ -91,7 +105,6 @@ function drawHistory() {
                         var latLng = new google.maps.LatLng(entry.latitude, entry.longitude);
                         coords.push(latLng);
                     }
-                    console.log(coords);
                     var travelPath = new google.maps.Polyline({
                         path: coords,
                         geodesic: true,
@@ -107,10 +120,12 @@ function drawHistory() {
 }
 
 
+/*
+ * Updates the marker with the most recent location from the device
+ */
 function updateMarker(){
-    // Updates the marker with the most recent location from the device
     $.ajax({
-        url: '/currentpos',
+        url: '/api/v1/currentpos',
         dataType: 'json',
         success: function(data) {
             var latLng = new google.maps.LatLng(data.latitude, data.longitude);
@@ -123,9 +138,13 @@ function updateMarker(){
     });
 }
 
+/*
+ * Starts the countdown timer, and provide a function to update the remaining
+ * seconds in the countdown, and a function to update the entire map display
+ * state once the timer reaches zero.
+ */
 function startTimer(){
-    //countdown(60, function(curTime){
-    countdown(10, function(curTime){
+    countdown(30, function(curTime){
         $('#marker-update-countdown').text('Map will update in: '+String(curTime));
     }, function(){
         updateMarker();
@@ -137,7 +156,7 @@ function startTimer(){
 
 function initialize() {
     $.ajax({
-        url: '/currentpos',
+        url: '/api/v1/currentpos',
         dataType: 'json',
         success: createMap
     });

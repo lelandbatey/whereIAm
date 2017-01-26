@@ -110,16 +110,16 @@ def main_page():
 	return flask.render_template("mainpage.html")
 
 
-@APP.route('/entry', methods=['POST'])
-@APP.route('/update', methods=['POST'])
+@APP.route('/api/v1/entry', methods=['POST'])
+@APP.route('/api/v1/update', methods=['POST'])
 def update():
 	"""Logs the request to the log file, as well as adding it to he database."""
 	AutoDB().new_entry(flask.request.form)
 	log_dict(flask.request.form)
 	return "Success"
 
-@APP.route('/entry', methods=['GET'])
-@APP.route('/currentpos')
+@APP.route('/api/v1/entry', methods=['GET'])
+@APP.route('/api/v1/currentpos')
 def current_position():
 	"""Responds with the latest location in the database."""
 	latest = AutoDB().get_latest()
@@ -128,29 +128,29 @@ def current_position():
 	else:
 		return make_json_response(SEED_DATA)
 
-@APP.route('/allpos')
+@APP.route('/api/v1/allpos')
 def all_positions():
 	"""Returns all the location entries in the database, serialized to JSON."""
 	return AutoQuery().get_all()
 
-@APP.route('/entry/id/<int:id_num>')
+@APP.route('/api/v1/entry/id/<int:id_num>')
 def get_entry_by_id(id_num):
 	"""Returns the entry with the given id."""
 	return AutoQuery().get_id(id_num)
 
-@APP.route('/entry/id/<int:start_id>/<int:end_id>')
+@APP.route('/api/v1/entry/id/<int:start_id>/<int:end_id>')
 def get_entry_list_by_ids(start_id, end_id):
 	"""Return list of entries, starting with `start_id` and ending with `end_id`."""
 	return AutoQuery().get_id_range(start_id, end_id)
 
-@APP.route('/entry/time/<entry_time>')
+@APP.route('/api/v1/entry/time/<entry_time>')
 def get_entry_by_time(entry_time):
 	"""Returns the entry with the time nearest the given time"""
 	entry_time = float(entry_time)
 	return AutoQuery().get_time(entry_time)
 
-@APP.route('/entry/time/<begin>/<end>')
-@APP.route('/data_range/<begin>/<end>')
+@APP.route('/api/v1/entry/time/<begin>/<end>')
+@APP.route('/api/v1/data_range/<begin>/<end>')
 def date_range(begin, end):
 	"""Returns all the location entries with timestamps between the given start
 	and end. Timestamps are in epoc format."""
@@ -158,12 +158,12 @@ def date_range(begin, end):
 	return AutoQuery().get_date_range(begin, end)
 
 
-@APP.route('/last_range')
-@APP.route('/last_range/<int:count>')
+@APP.route('/api/v1/last_range')
+@APP.route('/api/v1/last_range/<int:count>')
 def last_range(count=50):
 	return AutoQuery().get_last_count(count)
 
-@APP.route('/time_to_place/<path:location>')
+@APP.route('/api/v1/time_to_place/<path:location>')
 def time_to_place(location):
 	if not location:
 		return ""
