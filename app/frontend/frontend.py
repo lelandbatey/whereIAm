@@ -71,7 +71,7 @@ def jdump(in_data):
 
 def make_json_response(in_data):
 	"""Returns a proper json response out of the data passed in."""
-	if not isinstance(in_data, basestring):
+	if not isinstance(in_data, str):
 		in_data = jdump(in_data)
 	response = flask.make_response(in_data)
 	response.headers["Content-type"] = "application/json"
