@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from frontend import *
+from app.frontend.frontend import *

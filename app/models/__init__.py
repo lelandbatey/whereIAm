@@ -1,4 +1,4 @@
-import geo_utils
+from app.models import geo_utils
 
 class Bunch(object):
 	def __init__(self, **kwds):
@@ -8,6 +8,6 @@ class Bunch(object):
 			self.__dict__[v] = func(self.__dict__[v])
 
 
-from segment_series import SegmentSeries, CoordinateCollection
-from segment import Segment
+from app.models.segment_series import SegmentSeries, CoordinateCollection
+from app.models.segment import Segment
 

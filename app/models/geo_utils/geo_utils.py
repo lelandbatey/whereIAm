@@ -38,7 +38,7 @@ def distance_on_unit_sphere(lat1, long1, lat2, long2):
 	cos = min(1, max(cos, -1))
 	try:
 		arc = math.acos(cos)
-	except Exception, e:
+	except Exception as e:
 		#print("Cos:", cos)
 		#print(e)
 		raise e

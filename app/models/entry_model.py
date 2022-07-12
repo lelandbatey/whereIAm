@@ -1,6 +1,6 @@
 from __future__ import print_function
 from sqlalchemy import create_engine
-import geo_utils
+from app.models import geo_utils
 import datetime
 import json
 

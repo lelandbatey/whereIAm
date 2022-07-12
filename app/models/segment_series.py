@@ -1,6 +1,6 @@
 from __future__ import print_function
-import geo_utils
-from segment import Segment
+from app.models import geo_utils
+from app.models.segment import Segment
 
 class CoordinateCollection(object):
 	"""A collection of xy coordinates."""

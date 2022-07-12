@@ -1,6 +1,6 @@
 from __future__ import print_function
-import entry_model
-import geo_utils
+from app.models import entry_model
+from app.models import geo_utils
 import numbers
 import math
 
